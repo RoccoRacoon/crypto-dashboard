@@ -14,6 +14,7 @@
   --red:#b71c1c;--red-bg:#ffcdd2;
   --amber:#7c4a00;--amber-bg:#fff8e1;
   --blue:#0c447c;--blue-bg:#e3f2fd;
+  --purple:#4a148c;--purple-bg:#f3e5f5;
   --gray:#555;--gray-bg:#f1f3f4;
   --r:8px;--rl:12px;
   --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
@@ -26,6 +27,7 @@
   --red:#f87171;--red-bg:#7f1d1d;
   --amber:#fcd34d;--amber-bg:#78350f;
   --blue:#93c5fd;--blue-bg:#1e3a5f;
+  --purple:#ce93d8;--purple-bg:#4a148c;
   --gray:#cbd5e1;--gray-bg:#334155;
 }}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -35,7 +37,6 @@ body{font-family:var(--font);font-size:13px;background:var(--bg1);color:var(--tx
 button{font-family:var(--font);font-size:12px;padding:5px 12px;border:0.5px solid var(--bd0);border-radius:var(--r);background:transparent;color:var(--tx0);cursor:pointer}
 button:hover{background:var(--bg1)} button.active{background:var(--blue-bg);color:var(--blue);border-color:var(--blue)}
 button.btn-retry{background:var(--amber-bg);color:var(--amber);border-color:var(--amber)}
-button.btn-retry:hover{opacity:0.85}
 input[type=checkbox]{cursor:pointer;accent-color:var(--blue)}
 input[type=password],input[type=text]{font-family:var(--font);font-size:13px;padding:7px 10px;border:0.5px solid var(--bd0);border-radius:var(--r);background:var(--bg0);color:var(--tx0);width:100%}
 input:focus{outline:none;border-color:var(--blue)}
@@ -54,29 +55,28 @@ tr:hover td{background:var(--bg2)}
 .pos{color:var(--green-mid);font-weight:500} .neg{color:var(--red);font-weight:500}
 .sh{color:var(--green);font-weight:500} .sm{color:var(--green-mid);font-weight:500}
 .sl{color:var(--amber);font-weight:500} .sb{color:var(--red);font-weight:500}
-/* Setup */
+.manip-row td{background:rgba(74,20,140,0.05) !important}
 #setup{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
 .sc{background:var(--bg0);border:0.5px solid var(--bd0);border-radius:var(--rl);padding:32px;max-width:440px;width:100%}
 .setup-btn{width:100%;padding:9px;font-size:13px;border-radius:var(--r);background:var(--blue-bg);color:var(--blue);border:0.5px solid var(--blue);cursor:pointer;margin-top:8px}
 .setup-btn:hover{opacity:0.85}
 .warn-box{background:var(--amber-bg);color:var(--amber);border-radius:var(--r);padding:8px 10px;font-size:11px;margin-top:12px;line-height:1.5}
 .err-box{background:var(--red-bg);color:var(--red);border-radius:var(--r);padding:8px 10px;font-size:12px;margin-bottom:8px}
-.info-row{display:flex;align-items:center;gap:6px;font-size:11px;margin-bottom:6px;padding:5px 0;border-bottom:0.5px solid var(--bd2)}
 #main{display:none}
 .hdr{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px}
 .ctrl{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
 .tbl-wrap{overflow-x:auto;border-radius:var(--r);border:0.5px solid var(--bd0)}
 .foot{font-size:10px;color:var(--tx2);margin-top:8px;line-height:1.6}
+.legend-box{background:var(--bg1);border-radius:var(--r);padding:8px 12px;margin-bottom:8px;font-size:11px;line-height:1.8}
 </style>
 </head>
 <body>
 
-<!-- SETUP SCREEN -->
 <div id="setup">
   <div class="sc">
     <div style="font-size:28px;margin-bottom:4px">⚡</div>
     <div style="font-size:20px;font-weight:500;margin-bottom:2px">Crypto Spot Dashboard</div>
-    <div style="font-size:13px;color:var(--tx1);margin-bottom:20px">MA7 Distance + Volume Spike · CoinGecko API</div>
+    <div style="font-size:13px;color:var(--tx1);margin-bottom:20px">MA7 Distance + Volume Spike · Anti-Manipulasi · CoinGecko API</div>
     <div style="margin-bottom:12px">
       <div style="font-size:12px;color:var(--tx1);margin-bottom:4px">CoinGecko API Key (CG-...)</div>
       <input type="password" id="key-in" placeholder="CG-xxxxxxxxxxxxxxxxxxxxxxxx">
@@ -103,14 +103,12 @@ tr:hover td{background:var(--bg2)}
     </button>
     <div class="warn-box">
       <i class="ti ti-shield-lock" style="vertical-align:-1px"></i>
-      <strong>GitHub Pages:</strong> API key tidak disimpan di file HTML.
-      Gunakan form ini tiap buka, atau centang "Simpan di browser" untuk simpan di localStorage lokal.
+      API key tidak disimpan di file HTML. Aman untuk GitHub Pages publik.
     </div>
     <div id="setup-err" style="display:none;margin-top:8px" class="err-box"></div>
   </div>
 </div>
 
-<!-- MAIN DASHBOARD -->
 <div id="main" class="page">
   <div class="card">
     <div class="hdr">
@@ -140,7 +138,6 @@ tr:hover td{background:var(--bg2)}
 
     <div id="err-box" style="display:none" class="err-box"></div>
 
-    <!-- Progress loading -->
     <div id="prog-wrap" style="display:none;margin-bottom:8px">
       <div style="display:flex;justify-content:space-between;align-items:center">
         <span style="font-size:11px;color:var(--tx1)">
@@ -150,15 +147,14 @@ tr:hover td{background:var(--bg2)}
           <span style="color:var(--tx2)"> · sukses: <span id="prog-ok" style="color:var(--green-mid)">0</span>
           · gagal: <span id="prog-fail" style="color:var(--red)">0</span></span>
         </span>
-        <span id="prog-pct" style="font-size:11px;font-weight:500;color:var(--tx1)">0%</span>
+        <span id="prog-pct" style="font-size:11px;font-weight:500">0%</span>
       </div>
       <div class="prog-track"><div class="prog-bar" id="prog-bar" style="width:0%"></div></div>
-      <div style="font-size:10px;color:var(--tx2);margin-top:3px" id="prog-status">
-        Delay 2.2 detik/koin (Demo API rate limit: 30 req/mnt) · Estimasi: <span id="eta">—</span>
+      <div style="font-size:10px;color:var(--tx2);margin-top:3px">
+        Delay 2.2 detik/koin (Demo plan) · ETA: <span id="eta">—</span>
       </div>
     </div>
 
-    <!-- Done status -->
     <div id="done-wrap" style="display:none;margin-bottom:8px">
       <div id="done-ok" style="font-size:11px;color:var(--green-mid)">
         <i class="ti ti-circle-check" style="font-size:12px;vertical-align:-1px"></i>
@@ -170,13 +166,23 @@ tr:hover td{background:var(--bg2)}
       </div>
     </div>
 
-    <!-- Stats cards -->
     <div id="stats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:10px"></div>
 
-    <!-- Controls -->
+    <!-- Legend sinyal -->
+    <div class="legend-box">
+      <span style="font-weight:500;color:var(--tx1)">Keterangan sinyal:</span>
+      <span style="background:var(--green-bg);color:var(--green);padding:1px 6px;border-radius:4px;margin:0 3px">BREAKOUT</span> MA7&lt;8% + Spike&gt;2× + Vol&gt;$1M
+      <span style="background:var(--red-bg);color:var(--red);padding:1px 6px;border-radius:4px;margin:0 3px">EXHAUSTION</span> MA7&gt;15% + Spike&gt;2× + Vol&gt;$1M
+      <span style="background:var(--purple-bg);color:var(--purple);padding:1px 6px;border-radius:4px;margin:0 3px">Potensi Manipulasi</span> Spike&gt;2× + Vol&lt;$1M + Harga turun
+      <span style="background:var(--amber-bg);color:var(--amber);padding:1px 6px;border-radius:4px;margin:0 3px">Vol Tipis</span> Vol 24h &lt; $1 Juta
+    </div>
+
     <div class="ctrl">
       <label style="font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer">
         <input type="checkbox" id="hide-stable" checked> Sembunyikan Stablecoin
+      </label>
+      <label style="font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer">
+        <input type="checkbox" id="hide-thinvol"> Sembunyikan Vol Tipis (&lt;$1M)
       </label>
       <span style="color:var(--bd0)">|</span>
       <span style="font-size:11px;color:var(--tx1)">Sort:</span>
@@ -185,7 +191,7 @@ tr:hover td{background:var(--bg2)}
     </div>
 
     <div class="tbl-wrap">
-      <table style="min-width:920px">
+      <table style="min-width:960px">
         <thead id="thead"></thead>
         <tbody id="tbody"></tbody>
       </table>
@@ -193,10 +199,10 @@ tr:hover td{background:var(--bg2)}
 
     <div class="foot">
       MA7 = rata-rata 7 harga harian dari sparkline CoinGecko ·
-      Vol Spike = Vol 24h ÷ Rata-rata Vol Harian 6 Hari Terakhir ·
-      Sinyal BREAKOUT/EXHAUSTION aktif setelah Vol Spike dimuat ·
+      Vol Spike = Vol 24h ÷ Rata-rata Vol Harian 6 Hari Lalu ·
+      <strong>Sinyal BREAKOUT/EXHAUSTION hanya valid jika Vol 24h &gt; $1 Juta</strong> (filter anti-manipulasi) ·
       Skor: 24h%(35) + 7d%(25) + Vol/MC(25) + Likuiditas(15) + Bonus Triple + Adj MA7 ·
-      <strong>Bukan saran investasi.</strong>
+      Bukan saran investasi.
     </div>
   </div>
 </div>
@@ -208,8 +214,10 @@ const STABLE = new Set([
   "usyc","buidl","usdy","jtrsy","ustb","eutbl","ousg","fdusd","eurs","eurc","aeur"
 ]);
 
-let API_KEY="", BASE_URL="", coins=[], sortKey="score", hideStable=true;
-let abortFlag=false, failedCoins=[], successCount=0;
+const MIN_VOL_SIGNAL = 1_000_000; // $1M minimum untuk sinyal kuadran valid
+
+let API_KEY="", BASE_URL="", coins=[], sortKey="score", hideStable=true, hideThinVol=false;
+let abortFlag=false, failedCoins=[];
 const sleep = ms => new Promise(r=>setTimeout(r,ms));
 
 async function apiFetch(path) {
@@ -239,6 +247,8 @@ function calcScore(vmr,c24h,c7d,ma7d,vol,c1h) {
   return Math.min(100,Math.max(0,a+b+c+d+bonus+adj));
 }
 
+function isThinVol(vol) { return vol < MIN_VOL_SIGNAL; }
+
 function ma7I(d){
   if(d<0)  return {l:"Di bawah MA7",   bg:"var(--blue-bg)", fg:"var(--blue)"};
   if(d<5)  return {l:"Fresh (<5%)",    bg:"var(--green-bg)",fg:"var(--green)"};
@@ -246,33 +256,61 @@ function ma7I(d){
   if(d<18) return {l:"Extended 10-18%",bg:"var(--red-bg)",  fg:"var(--red)"};
   return         {l:"Overextended!",  bg:"var(--red-bg)",  fg:"var(--red)"};
 }
-function vsI(v){
-  if(v===null) return {l:"...", bg:"var(--gray-bg)",fg:"var(--tx2)"};
-  if(v<0.8)   return {l:"Rendah (<0.8×)", bg:"var(--blue-bg)",fg:"var(--blue)"};
-  if(v<1.5)   return {l:"Normal 0.8-1.5×",bg:"var(--gray-bg)",fg:"var(--gray)"};
-  if(v<2.5)   return {l:"Elevated 1.5-2.5×",bg:"var(--amber-bg)",fg:"var(--amber)"};
-  return            {l:"SPIKE! >2.5×",bg:"var(--green-bg)",fg:"var(--green)"};
-}
-function sigI(ma7d,vs,sc){
-  if(vs!==null){
-    if(ma7d<8 &&vs>2)  return {l:"BREAKOUT — Beli",       bg:"var(--green-bg)",fg:"var(--green)"};
-    if(ma7d>15&&vs>2)  return {l:"EXHAUSTION — Hindari",  bg:"var(--red-bg)",  fg:"var(--red)"};
-    if(ma7d<8 &&vs<1)  return {l:"Konsolidasi — Tunggu",  bg:"var(--blue-bg)", fg:"var(--blue)"};
-    if(ma7d>15&&vs<1)  return {l:"Overextended — Tunggu", bg:"var(--amber-bg)",fg:"var(--amber)"};
-    if(ma7d<10&&vs>=1.5&&sc>=58) return {l:"Momentum Bagus",bg:"var(--green-bg)",fg:"var(--green-mid)"};
-  }
-  if(sc>=72) return {l:"Beli Kuat",   bg:"var(--green-bg)",fg:"var(--green)"};
-  if(sc>=58) return {l:"Potensi Naik",bg:"var(--green-bg)",fg:"var(--green-mid)"};
-  if(sc>=44) return {l:"Tunggu",      bg:"var(--amber-bg)",fg:"var(--amber)"};
-  return           {l:"Skip",         bg:"var(--red-bg)",  fg:"var(--red)"};
+
+function vsI(v, vol) {
+  const thin = isThinVol(vol);
+  if(v===null) return {l:"...", bg:"var(--gray-bg)",fg:"var(--tx2)", thin:false};
+  const thinLabel = thin ? " ⚠️" : "";
+  if(v<0.8)  return {l:"Rendah (<0.8×)"+thinLabel,  bg:thin?"var(--amber-bg)":"var(--blue-bg)", fg:thin?"var(--amber)":"var(--blue)", thin};
+  if(v<1.5)  return {l:"Normal 0.8-1.5×"+thinLabel, bg:thin?"var(--amber-bg)":"var(--gray-bg)", fg:thin?"var(--amber)":"var(--gray)", thin};
+  if(v<2.5)  return {l:"Elevated 1.5-2.5×"+thinLabel,bg:thin?"var(--amber-bg)":"var(--amber-bg)",fg:"var(--amber)", thin};
+  return            {l:"SPIKE! >2.5×"+thinLabel,    bg:thin?"var(--amber-bg)":"var(--green-bg)", fg:thin?"var(--amber)":"var(--green)", thin};
 }
 
-function fmtBig(n){
-  if(!n)return"—";
-  if(n>=1e12)return"$"+(n/1e12).toFixed(2)+"T";
-  if(n>=1e9) return"$"+(n/1e9).toFixed(2)+"B";
-  if(n>=1e6) return"$"+(n/1e6).toFixed(1)+"M";
-  return"$"+n.toFixed(0);
+// ── FUNGSI SINYAL UTAMA — dengan filter anti-manipulasi ──
+function sigI(ma7d, vs, sc, vol, c24h) {
+  const thin = isThinVol(vol);
+
+  // Deteksi potensi manipulasi: spike tinggi + volume tipis + harga turun
+  if (vs !== null && vs > 2 && thin && c24h <= 0) {
+    return {l:"Potensi Manipulasi!", bg:"var(--purple-bg)", fg:"var(--purple)", manip:true};
+  }
+
+  // Volume tipis: sinyal kuadran tidak valid, tampilkan peringatan
+  if (thin && vs !== null && vs > 1.5) {
+    return {l:"Vol Tipis — Waspadai", bg:"var(--amber-bg)", fg:"var(--amber)", manip:false};
+  }
+
+  // Sinyal kuadran — HANYA jika Vol 24h > $1M
+  if (vs !== null && !thin) {
+    if (ma7d<8  && vs>2)  return {l:"BREAKOUT — Beli",        bg:"var(--green-bg)", fg:"var(--green)"};
+    if (ma7d>15 && vs>2)  return {l:"EXHAUSTION — Hindari",   bg:"var(--red-bg)",   fg:"var(--red)"};
+    if (ma7d<8  && vs<1)  return {l:"Konsolidasi — Tunggu",   bg:"var(--blue-bg)",  fg:"var(--blue)"};
+    if (ma7d>15 && vs<1)  return {l:"Overextended — Tunggu",  bg:"var(--amber-bg)", fg:"var(--amber)"};
+    if (ma7d<10 && vs>=1.5 && sc>=58) return {l:"Momentum Bagus", bg:"var(--green-bg)", fg:"var(--green-mid)"};
+  }
+
+  // Fallback skor (jika vol tipis atau spike belum dimuat)
+  const suffix = thin ? " (vol tipis)" : "";
+  if (sc>=72) return {l:"Beli Kuat"+suffix,   bg:"var(--green-bg)", fg:"var(--green)"};
+  if (sc>=58) return {l:"Potensi Naik"+suffix, bg:"var(--green-bg)", fg:"var(--green-mid)"};
+  if (sc>=44) return {l:"Tunggu"+suffix,       bg:"var(--amber-bg)", fg:"var(--amber)"};
+  return            {l:"Skip",                 bg:"var(--red-bg)",   fg:"var(--red)"};
+}
+
+function fmtVol(n) {
+  if (!n) return "—";
+  if (n>=1e9) return "$"+(n/1e9).toFixed(2)+"B";
+  if (n>=1e6) return "$"+(n/1e6).toFixed(1)+"M";
+  if (n>=1e3) return "$"+(n/1e3).toFixed(0)+"K";
+  return "$"+n.toFixed(0);
+}
+function fmtMC(n) {
+  if (!n) return "—";
+  if (n>=1e12) return "$"+(n/1e12).toFixed(2)+"T";
+  if (n>=1e9)  return "$"+(n/1e9).toFixed(2)+"B";
+  if (n>=1e6)  return "$"+(n/1e6).toFixed(1)+"M";
+  return "$"+n.toFixed(0);
 }
 function fmtPct(v){
   const p=(v*100).toFixed(2),cls=v>=0?"pos":"neg";
@@ -281,25 +319,36 @@ function fmtPct(v){
 function badge(l,bg,fg){return`<span class="badge" style="background:${bg};color:${fg}">${l}</span>`;}
 
 function renderStats(){
-  const d=hideStable?coins.filter(c=>!c.stable):coins;
+  const d = getDisplay();
   const loaded=d.filter(c=>c.vs!==null).length;
-  const brk=d.filter(c=>c.vs!==null&&c.ma7d<8&&c.vs>2).length;
+  const brk=d.filter(c=>c.vs!==null&&!isThinVol(c.vol)&&c.ma7d<8&&c.vs>2).length;
+  const manip=d.filter(c=>c.vs!==null&&c.vs>2&&isThinVol(c.vol)&&c.c24h<=0).length;
   const fresh=d.filter(c=>c.ma7d>=0&&c.ma7d<5).length;
-  const hi=d.filter(c=>c.score>=72).length;
+  const hi=d.filter(c=>c.score>=72&&!isThinVol(c.vol)).length;
   const items=[
-    {l:"Koin ditampilkan",v:d.length,s:"dari top 100"},
-    {l:"Breakout Signal",v:brk,s:"MA7 fresh + spike"},
-    {l:"Zona Fresh",v:fresh,s:"MA7 distance < 5%"},
-    {l:"Skor tinggi (≥72)",v:hi,s:"kandidat beli"},
-    {l:"Vol Spike loaded",v:loaded+"/"+d.length,s:loaded===d.length?"lengkap":"dalam proses"},
+    {l:"Koin ditampilkan",   v:d.length,    s:"dari top 100"},
+    {l:"Breakout Signal",    v:brk,         s:"MA7 fresh + spike valid"},
+    {l:"Zona Fresh",         v:fresh,       s:"MA7 distance < 5%"},
+    {l:"Skor tinggi (≥72)",  v:hi,          s:"vol > $1M"},
+    {l:"Potensi Manipulasi", v:manip,       s:"spike tipis + harga turun"},
+    {l:"Vol Spike loaded",   v:loaded+"/"+d.length, s:loaded===d.length?"lengkap":"dalam proses"},
   ];
-  document.getElementById("stats").innerHTML=items.map(s=>
-    `<div class="stat-card"><div class="stat-label">${s.l}</div><div class="stat-val">${s.v}</div><div class="stat-sub">${s.s}</div></div>`
-  ).join("");
+  document.getElementById("stats").innerHTML=items.map((s,i)=>`
+    <div class="stat-card" ${i===4&&s.v>0?`style="border:0.5px solid var(--purple);"`:"" }>
+      <div class="stat-label">${s.l}</div>
+      <div class="stat-val" ${i===4&&s.v>0?`style="color:var(--purple)"`:""}>${s.v}</div>
+      <div class="stat-sub">${s.s}</div>
+    </div>`).join("");
+}
+
+function getDisplay() {
+  let d = hideStable ? coins.filter(c=>!c.stable) : coins;
+  if (hideThinVol) d = d.filter(c=>!isThinVol(c.vol));
+  return d;
 }
 
 function renderTable(){
-  const display=hideStable?coins.filter(c=>!c.stable):coins;
+  const display = getDisplay();
   const sorted=[...display].sort((a,b)=>{
     if(sortKey==="score")return b.score-a.score;
     if(sortKey==="rank") return a.rank-b.rank;
@@ -310,62 +359,63 @@ function renderTable(){
     return 0;
   });
   document.getElementById("count-lbl").textContent=sorted.length+" koin";
+
   const cols=["#","Token","Mkt Cap","Vol 24h","Vol/MC%","1h","24h","7d","MA7 Dist","Zona MA7","Vol Spike","Sinyal Kuadran","Skor"];
   const aligns=[1,0,1,1,1,1,1,1,1,0,1,0,1];
-  const widths=[28,175,82,82,50,50,56,56,66,120,70,148,46];
+  const widths=[28,175,80,90,50,50,56,56,66,120,85,160,46];
+
   document.getElementById("thead").innerHTML="<tr>"+cols.map((h,i)=>
     `<th class="${aligns[i]?"":"L"}" style="width:${widths[i]}px">${h}</th>`).join("")+"</tr>";
+
   document.getElementById("tbody").innerHTML=sorted.map((c,i)=>{
-    const mi=ma7I(c.ma7d),vi=vsI(c.vs),si=sigI(c.ma7d,c.vs,c.score);
-    const mc=c.ma7d<0?"var(--blue)":c.ma7d<5?"var(--green)":c.ma7d<10?"var(--amber)":"var(--red)";
-    const sc=c.score>=72?"sh":c.score>=58?"sm":c.score>=44?"sl":"sb";
-    const rb=i%2===0?"var(--bg0)":"var(--bg1)";
-    return`<tr style="background:${rb}">
+    const thin = isThinVol(c.vol);
+    const mi=ma7I(c.ma7d);
+    const vi=vsI(c.vs, c.vol);
+    const si=sigI(c.ma7d, c.vs, c.score, c.vol, c.c24h);
+    const isManip = si.manip === true;
+    const mc_color=c.ma7d<0?"var(--blue)":c.ma7d<5?"var(--green)":c.ma7d<10?"var(--amber)":"var(--red)";
+    const sc_cls=c.score>=72&&!thin?"sh":c.score>=58&&!thin?"sm":c.score>=44?"sl":"sb";
+    const rb=isManip?"background:rgba(74,20,140,0.06)":i%2===0?"background:var(--bg0)":"background:var(--bg1)";
+    const volColor = thin ? "color:var(--amber);font-weight:500" : "";
+    return`<tr style="${rb}" ${isManip?'class="manip-row"':''}>
       <td style="color:var(--tx2);text-align:center">${i+1}</td>
       <td class="L"><div class="tc">
         ${c.img?`<img src="${c.img}" width="15" height="15" style="border-radius:50%;flex-shrink:0" loading="lazy">`:""}
         <span class="tn">${c.name}</span>
         <span class="ts">${c.sym}</span>
+        ${thin?`<span style="background:var(--amber-bg);color:var(--amber);font-size:9px;padding:0 4px;border-radius:3px;flex-shrink:0">tipis</span>`:""}
       </div></td>
-      <td>${fmtBig(c.mcap)}</td>
-      <td>${fmtBig(c.vol)}</td>
+      <td>${fmtMC(c.mcap)}</td>
+      <td style="${volColor}">${fmtVol(c.vol)}</td>
       <td>${(c.vmr*100).toFixed(1)}%</td>
       <td>${fmtPct(c.c1h)}</td>
       <td>${fmtPct(c.c24h)}</td>
       <td>${fmtPct(c.c7d)}</td>
-      <td style="color:${mc};font-weight:500">${c.ma7d.toFixed(1)}%</td>
+      <td style="color:${mc_color};font-weight:500">${c.ma7d.toFixed(1)}%</td>
       <td class="L">${badge(mi.l,mi.bg,mi.fg)}</td>
-      <td style="font-weight:500">${c.vs!==null?c.vs.toFixed(2)+"&times;":`<span style="color:var(--tx2)">...</span>`}</td>
+      <td style="font-weight:500;${thin&&c.vs!==null&&c.vs>1.5?"color:var(--amber)":""}">${c.vs!==null?c.vs.toFixed(2)+"&times;":`<span style="color:var(--tx2)">...</span>`}</td>
       <td class="L">${badge(si.l,si.bg,si.fg)}</td>
-      <td style="text-align:center"><span class="${sc}">${c.score.toFixed(0)}</span></td>
+      <td style="text-align:center"><span class="${sc_cls}">${c.score.toFixed(0)}</span></td>
     </tr>`;
   }).join("");
   renderStats();
 }
 
-async function fetchVolSpike(targets, label) {
+async function fetchVolSpike(targets) {
   const DELAY = BASE_URL.includes("pro-api") ? 320 : 2200;
-  const newFailed = [];
+  const newFailed=[];
   let loaded=0, ok=0, fail=0;
-  const startTime = Date.now();
-
+  const t0=Date.now();
   document.getElementById("prog-wrap").style.display="block";
   document.getElementById("done-wrap").style.display="none";
   document.getElementById("retry-btn").style.display="none";
-  document.getElementById("prog-text").textContent="0/"+targets.length;
-  document.getElementById("prog-ok").textContent="0";
-  document.getElementById("prog-fail").textContent="0";
-  document.getElementById("prog-bar").style.width="0%";
 
   for(let i=0;i<targets.length;i++){
     if(abortFlag) break;
     if(i>0) await sleep(DELAY);
     if(abortFlag) break;
-
     const t=targets[i];
-    let gotData=false;
-
-    // Attempt 1
+    let got=false;
     try{
       const chart=await apiFetch(`/coins/${t.id}/market_chart?vs_currency=usd&days=7&interval=daily`);
       const vols=(chart.total_volumes||[]).map(v=>v[1]);
@@ -374,9 +424,8 @@ async function fetchVolSpike(targets, label) {
       const vs=(avg&&avg>0)?t.vol/avg:null;
       const idx=coins.findIndex(c=>c.id===t.id);
       if(idx>=0) coins[idx].vs=vs;
-      gotData=true; ok++;
+      got=true; ok++;
     } catch(e){
-      // Retry setelah 5 detik jika 429
       if(e.message.includes("429")){
         await sleep(5000);
         try{
@@ -387,33 +436,29 @@ async function fetchVolSpike(targets, label) {
           const vs=(avg&&avg>0)?t.vol/avg:null;
           const idx=coins.findIndex(c=>c.id===t.id);
           if(idx>=0) coins[idx].vs=vs;
-          gotData=true; ok++;
+          got=true; ok++;
         } catch(e2){ fail++; newFailed.push(t); }
       } else { fail++; newFailed.push(t); }
     }
-
     loaded++;
     const pct=Math.round(loaded/targets.length*100);
-    const elapsed=(Date.now()-startTime)/1000;
-    const remaining=targets.length-loaded;
-    const etaSec=loaded>0?Math.round(elapsed/loaded*remaining):0;
-    const etaStr=etaSec>60?Math.round(etaSec/60)+"m "+Math.round(etaSec%60)+"d":etaSec+"d";
-
+    const el=(Date.now()-t0)/1000;
+    const rem=targets.length-loaded;
+    const eta=loaded>0?Math.round(el/loaded*rem):0;
+    const etaS=eta>60?Math.round(eta/60)+"m "+Math.round(eta%60)+"d":eta+"d";
     document.getElementById("prog-text").textContent=loaded+"/"+targets.length;
     document.getElementById("prog-ok").textContent=ok;
     document.getElementById("prog-fail").textContent=fail;
     document.getElementById("prog-pct").textContent=pct+"%";
     document.getElementById("prog-bar").style.width=pct+"%";
-    document.getElementById("eta").textContent=remaining>0?"~"+etaStr+" lagi":"selesai";
+    document.getElementById("eta").textContent=rem>0?"~"+etaS+" lagi":"selesai";
     renderTable();
   }
 
-  successCount=ok;
   failedCoins=newFailed;
   document.getElementById("prog-wrap").style.display="none";
   document.getElementById("done-wrap").style.display="block";
   document.getElementById("done-msg").textContent=ok+"/"+targets.length+" koin berhasil dimuat";
-
   if(newFailed.length>0){
     document.getElementById("done-fail-row").style.display="block";
     document.getElementById("done-fail-msg").textContent=newFailed.length+" koin gagal";
@@ -421,13 +466,12 @@ async function fetchVolSpike(targets, label) {
     document.getElementById("retry-btn").style.display="inline-block";
   } else {
     document.getElementById("done-fail-row").style.display="none";
-    document.getElementById("retry-btn").style.display="none";
   }
   renderTable();
 }
 
 async function loadData(){
-  abortFlag=false; failedCoins=[]; successCount=0;
+  abortFlag=false; failedCoins=[];
   document.getElementById("err-box").style.display="none";
   document.getElementById("done-wrap").style.display="none";
   document.getElementById("prog-wrap").style.display="none";
@@ -458,7 +502,7 @@ async function loadData(){
     });
     document.getElementById("ts").textContent="CoinGecko API · "+new Date().toLocaleString("id-ID");
     renderTable();
-    await fetchVolSpike(coins.filter(c=>!c.stable), "non-stablecoin");
+    await fetchVolSpike(coins.filter(c=>!c.stable));
   } catch(e){
     const eb=document.getElementById("err-box");
     eb.style.display="block";
@@ -468,16 +512,20 @@ async function loadData(){
 }
 
 function exportCSV(){
-  const display=hideStable?coins.filter(c=>!c.stable):coins;
+  const display=getDisplay();
   const sorted=[...display].sort((a,b)=>b.score-a.score);
-  const hdr=["Rank","Nama","Ticker","MktCap","Vol24h","VolMC%","1h%","24h%","7d%","MA7Dist%","ZonaMA7","VolSpike","Sinyal","Skor"];
-  const rows=sorted.map((c,i)=>[
-    i+1,`"${c.name}"`,c.sym,c.mcap,c.vol,
-    (c.vmr*100).toFixed(2),(c.c1h*100).toFixed(2),(c.c24h*100).toFixed(2),(c.c7d*100).toFixed(2),
-    c.ma7d.toFixed(1),`"${ma7I(c.ma7d).l}"`,
-    c.vs!==null?c.vs.toFixed(2):"N/A",
-    `"${sigI(c.ma7d,c.vs,c.score).l}"`,c.score.toFixed(0)
-  ].join(","));
+  const hdr=["Rank","Nama","Ticker","MktCap","Vol24h","VolMC%","1h%","24h%","7d%","MA7Dist%","ZonaMA7","VolSpike","Sinyal","Skor","VolTipis"];
+  const rows=sorted.map((c,i)=>{
+    const si=sigI(c.ma7d,c.vs,c.score,c.vol,c.c24h);
+    return [
+      i+1,`"${c.name}"`,c.sym,c.mcap,c.vol,
+      (c.vmr*100).toFixed(2),(c.c1h*100).toFixed(2),(c.c24h*100).toFixed(2),(c.c7d*100).toFixed(2),
+      c.ma7d.toFixed(1),`"${ma7I(c.ma7d).l}"`,
+      c.vs!==null?c.vs.toFixed(2):"N/A",
+      `"${si.l}"`,c.score.toFixed(0),
+      isThinVol(c.vol)?"Ya":"Tidak"
+    ].join(",");
+  });
   const blob=new Blob([[hdr.join(","),...rows].join("\n")],{type:"text/csv"});
   const a=document.createElement("a");
   a.href=URL.createObjectURL(blob);
@@ -485,7 +533,6 @@ function exportCSV(){
   a.click(); URL.revokeObjectURL(a.href);
 }
 
-// Event listeners
 document.getElementById("start-btn").addEventListener("click",()=>{
   const key=document.getElementById("key-in").value.trim();
   const plan=document.querySelector("input[name=plan]:checked").value;
@@ -511,12 +558,13 @@ function setupUI(){
     document.getElementById("key-in").value="";
   });
   document.getElementById("retry-btn").addEventListener("click",async()=>{
-    if(failedCoins.length===0) return;
+    if(!failedCoins.length)return;
     const toRetry=[...failedCoins]; failedCoins=[];
     document.getElementById("retry-btn").style.display="none";
-    await fetchVolSpike(toRetry,"retry");
+    await fetchVolSpike(toRetry);
   });
   document.getElementById("hide-stable").addEventListener("change",function(){hideStable=this.checked;renderTable();});
+  document.getElementById("hide-thinvol").addEventListener("change",function(){hideThinVol=this.checked;renderTable();});
   const sorts=[["score","Skor"],["rank","Rank"],["24h","24h %"],["ma7d","MA7 Dist"],["vs","Vol Spike"],["vol","Volume"]];
   document.getElementById("sort-btns").innerHTML=sorts.map(([k,l])=>
     `<button data-k="${k}" class="${k===sortKey?"active":""}">${l}</button>`).join("");
@@ -528,13 +576,12 @@ function setupUI(){
   });
 }
 
-// Auto-login dari localStorage
 const saved=localStorage.getItem("cg_key");
 if(saved){
   const [k,p]=saved.split("|");
   document.getElementById("key-in").value=k;
-  const radio=document.querySelector(`input[name=plan][value="${p||"demo"}"]`);
-  if(radio) radio.checked=true;
+  const r=document.querySelector(`input[name=plan][value="${p||"demo"}"]`);
+  if(r)r.checked=true;
   document.getElementById("save-key").checked=true;
 }
 </script>
