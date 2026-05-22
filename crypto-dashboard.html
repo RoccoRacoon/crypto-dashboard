@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Crypto Spot Dashboard — CoinGecko</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+:root {
+  --bg0:#ffffff;--bg1:#f7f8fa;--bg2:#eef0f4;
+  --tx0:#111827;--tx1:#6b7280;--tx2:#9ca3af;
+  --bd0:rgba(0,0,0,0.12);--bd1:rgba(0,0,0,0.07);--bd2:rgba(0,0,0,0.04);
+  --green:#1b5e20;--green-bg:#e8f5e9;--green-mid:#2e7d32;
+  --red:#b71c1c;--red-bg:#ffcdd2;
+  --amber:#7c4a00;--amber-bg:#fff8e1;
+  --blue:#0c447c;--blue-bg:#e3f2fd;
+  --gray:#555;--gray-bg:#f1f3f4;
+  --r:8px;--rl:12px;
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg0:#0f172a;--bg1:#1e293b;--bg2:#334155;
+  --tx0:#f1f5f9;--tx1:#94a3b8;--tx2:#64748b;
+  --bd0:rgba(255,255,255,0.15);--bd1:rgba(255,255,255,0.08);--bd2:rgba(255,255,255,0.04);
+  --green:#4ade80;--green-bg:#14532d;--green-mid:#86efac;
+  --red:#f87171;--red-bg:#7f1d1d;
+  --amber:#fcd34d;--amber-bg:#78350f;
+  --blue:#93c5fd;--blue-bg:#1e3a5f;
+  --gray:#cbd5e1;--gray-bg:#334155;
+}}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);font-size:13px;background:var(--bg1);color:var(--tx0);min-height:100vh}
+.page{max-width:1400px;margin:0 auto;padding:16px}
+.card{background:var(--bg0);border:0.5px solid var(--bd0);border-radius:var(--rl);padding:16px 20px;margin-bottom:12px}
+button{font-family:var(--font);font-size:12px;padding:5px 12px;border:0.5px solid var(--bd0);border-radius:var(--r);background:transparent;color:var(--tx0);cursor:pointer}
+button:hover{background:var(--bg1)} button.active{background:var(--blue-bg);color:var(--blue);border-color:var(--blue)}
+button.btn-retry{background:var(--amber-bg);color:var(--amber);border-color:var(--amber)}
+button.btn-retry:hover{opacity:0.85}
+input[type=checkbox]{cursor:pointer;accent-color:var(--blue)}
+input[type=password],input[type=text]{font-family:var(--font);font-size:13px;padding:7px 10px;border:0.5px solid var(--bd0);border-radius:var(--r);background:var(--bg0);color:var(--tx0);width:100%}
+input:focus{outline:none;border-color:var(--blue)}
+.badge{display:inline-block;padding:1px 6px;border-radius:4px;font-size:11px;white-space:nowrap}
+.stat-card{background:var(--bg1);border-radius:var(--r);padding:10px 12px}
+.stat-label{font-size:11px;color:var(--tx1)} .stat-val{font-size:20px;font-weight:500;margin:2px 0} .stat-sub{font-size:10px;color:var(--tx2)}
+.prog-track{height:3px;background:var(--bg2);border-radius:2px;overflow:hidden;margin-top:4px}
+.prog-bar{height:100%;background:var(--green-mid);border-radius:2px;transition:width 0.3s}
+table{border-collapse:collapse;width:100%}
+th{padding:6px 8px;font-weight:500;font-size:11px;color:var(--tx1);border-bottom:0.5px solid var(--bd0);white-space:nowrap;text-align:right;background:var(--bg1)} th.L{text-align:left}
+td{padding:5px 8px;border-bottom:0.5px solid var(--bd1);text-align:right;white-space:nowrap} td.L{text-align:left}
+tr:hover td{background:var(--bg2)}
+.tc{display:flex;align-items:center;gap:5px}
+.tn{font-weight:500;max-width:110px;overflow:hidden;text-overflow:ellipsis}
+.ts{font-size:10px;color:var(--tx2)}
+.pos{color:var(--green-mid);font-weight:500} .neg{color:var(--red);font-weight:500}
+.sh{color:var(--green);font-weight:500} .sm{color:var(--green-mid);font-weight:500}
+.sl{color:var(--amber);font-weight:500} .sb{color:var(--red);font-weight:500}
+/* Setup */
+#setup{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+.sc{background:var(--bg0);border:0.5px solid var(--bd0);border-radius:var(--rl);padding:32px;max-width:440px;width:100%}
+.setup-btn{width:100%;padding:9px;font-size:13px;border-radius:var(--r);background:var(--blue-bg);color:var(--blue);border:0.5px solid var(--blue);cursor:pointer;margin-top:8px}
+.setup-btn:hover{opacity:0.85}
+.warn-box{background:var(--amber-bg);color:var(--amber);border-radius:var(--r);padding:8px 10px;font-size:11px;margin-top:12px;line-height:1.5}
+.err-box{background:var(--red-bg);color:var(--red);border-radius:var(--r);padding:8px 10px;font-size:12px;margin-bottom:8px}
+.info-row{display:flex;align-items:center;gap:6px;font-size:11px;margin-bottom:6px;padding:5px 0;border-bottom:0.5px solid var(--bd2)}
+#main{display:none}
+.hdr{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.ctrl{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
+.tbl-wrap{overflow-x:auto;border-radius:var(--r);border:0.5px solid var(--bd0)}
+.foot{font-size:10px;color:var(--tx2);margin-top:8px;line-height:1.6}
+</style>
+</head>
+<body>
+
+<!-- SETUP SCREEN -->
+<div id="setup">
+  <div class="sc">
+    <div style="font-size:28px;margin-bottom:4px">⚡</div>
+    <div style="font-size:20px;font-weight:500;margin-bottom:2px">Crypto Spot Dashboard</div>
+    <div style="font-size:13px;color:var(--tx1);margin-bottom:20px">MA7 Distance + Volume Spike · CoinGecko API</div>
+    <div style="margin-bottom:12px">
+      <div style="font-size:12px;color:var(--tx1);margin-bottom:4px">CoinGecko API Key (CG-...)</div>
+      <input type="password" id="key-in" placeholder="CG-xxxxxxxxxxxxxxxxxxxxxxxx">
+      <div style="font-size:11px;color:var(--tx2);margin-top:4px">
+        Gratis di <a href="https://www.coingecko.com/en/api/pricing" target="_blank" style="color:var(--blue)">coingecko.com/en/api/pricing</a> (Demo Plan)
+      </div>
+    </div>
+    <div style="margin-bottom:12px">
+      <div style="font-size:12px;color:var(--tx1);margin-bottom:4px">Plan</div>
+      <div style="display:flex;gap:12px">
+        <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer">
+          <input type="radio" name="plan" value="demo" checked> Demo (gratis · 30 req/min)
+        </label>
+        <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer">
+          <input type="radio" name="plan" value="pro"> Pro (250+ req/min)
+        </label>
+      </div>
+    </div>
+    <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;margin-bottom:14px">
+      <input type="checkbox" id="save-key"> Simpan key di browser (localStorage)
+    </label>
+    <button class="setup-btn" id="start-btn">
+      <i class="ti ti-rocket" style="font-size:14px;vertical-align:-2px"></i> Mulai Dashboard
+    </button>
+    <div class="warn-box">
+      <i class="ti ti-shield-lock" style="vertical-align:-1px"></i>
+      <strong>GitHub Pages:</strong> API key tidak disimpan di file HTML.
+      Gunakan form ini tiap buka, atau centang "Simpan di browser" untuk simpan di localStorage lokal.
+    </div>
+    <div id="setup-err" style="display:none;margin-top:8px" class="err-box"></div>
+  </div>
+</div>
+
+<!-- MAIN DASHBOARD -->
+<div id="main" class="page">
+  <div class="card">
+    <div class="hdr">
+      <div>
+        <div style="font-size:15px;font-weight:500">
+          <i class="ti ti-chart-bar" style="font-size:15px;vertical-align:-2px;margin-right:4px"></i>
+          Analisis Spot Kripto — Real-Time
+        </div>
+        <div id="ts" style="font-size:11px;color:var(--tx1);margin-top:2px">Menghubungkan...</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button id="retry-btn" class="btn-retry" style="display:none">
+          <i class="ti ti-refresh-alert" style="font-size:13px;vertical-align:-2px"></i>
+          Retry Gagal (<span id="retry-count">0</span>)
+        </button>
+        <button id="refresh-btn">
+          <i class="ti ti-refresh" style="font-size:13px;vertical-align:-2px"></i> Refresh
+        </button>
+        <button id="export-btn">
+          <i class="ti ti-download" style="font-size:13px;vertical-align:-2px"></i> CSV
+        </button>
+        <button id="logout-btn" style="color:var(--tx2);font-size:11px">
+          <i class="ti ti-key" style="font-size:12px;vertical-align:-1px"></i> Ganti Key
+        </button>
+      </div>
+    </div>
+
+    <div id="err-box" style="display:none" class="err-box"></div>
+
+    <!-- Progress loading -->
+    <div id="prog-wrap" style="display:none;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:11px;color:var(--tx1)">
+          <i class="ti ti-clock" style="font-size:11px;vertical-align:-1px"></i>
+          Mengambil Vol Spike...
+          <span id="prog-text" style="font-weight:500">0/0</span>
+          <span style="color:var(--tx2)"> · sukses: <span id="prog-ok" style="color:var(--green-mid)">0</span>
+          · gagal: <span id="prog-fail" style="color:var(--red)">0</span></span>
+        </span>
+        <span id="prog-pct" style="font-size:11px;font-weight:500;color:var(--tx1)">0%</span>
+      </div>
+      <div class="prog-track"><div class="prog-bar" id="prog-bar" style="width:0%"></div></div>
+      <div style="font-size:10px;color:var(--tx2);margin-top:3px" id="prog-status">
+        Delay 2.2 detik/koin (Demo API rate limit: 30 req/mnt) · Estimasi: <span id="eta">—</span>
+      </div>
+    </div>
+
+    <!-- Done status -->
+    <div id="done-wrap" style="display:none;margin-bottom:8px">
+      <div id="done-ok" style="font-size:11px;color:var(--green-mid)">
+        <i class="ti ti-circle-check" style="font-size:12px;vertical-align:-1px"></i>
+        <span id="done-msg"></span>
+      </div>
+      <div id="done-fail-row" style="display:none;font-size:11px;color:var(--amber);margin-top:3px">
+        <i class="ti ti-alert-triangle" style="font-size:12px;vertical-align:-1px"></i>
+        <span id="done-fail-msg"></span> — klik <strong>Retry Gagal</strong> untuk coba ulang.
+      </div>
+    </div>
+
+    <!-- Stats cards -->
+    <div id="stats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:10px"></div>
+
+    <!-- Controls -->
+    <div class="ctrl">
+      <label style="font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer">
+        <input type="checkbox" id="hide-stable" checked> Sembunyikan Stablecoin
+      </label>
+      <span style="color:var(--bd0)">|</span>
+      <span style="font-size:11px;color:var(--tx1)">Sort:</span>
+      <span id="sort-btns" style="display:flex;gap:4px;flex-wrap:wrap"></span>
+      <span style="margin-left:auto;font-size:11px;color:var(--tx1)" id="count-lbl"></span>
+    </div>
+
+    <div class="tbl-wrap">
+      <table style="min-width:920px">
+        <thead id="thead"></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+
+    <div class="foot">
+      MA7 = rata-rata 7 harga harian dari sparkline CoinGecko ·
+      Vol Spike = Vol 24h ÷ Rata-rata Vol Harian 6 Hari Terakhir ·
+      Sinyal BREAKOUT/EXHAUSTION aktif setelah Vol Spike dimuat ·
+      Skor: 24h%(35) + 7d%(25) + Vol/MC(25) + Likuiditas(15) + Bonus Triple + Adj MA7 ·
+      <strong>Bukan saran investasi.</strong>
+    </div>
+  </div>
+</div>
+
+<script>
+const STABLE = new Set([
+  "usdt","usdc","dai","tusd","busd","usdp","usdn","usdd","frax","lusd","gusd","crvusd",
+  "usde","pyusd","usds","usd1","rlusd","usdg","usdf","usdtb","bfusd","gho","usd0",
+  "usyc","buidl","usdy","jtrsy","ustb","eutbl","ousg","fdusd","eurs","eurc","aeur"
+]);
+
+let API_KEY="", BASE_URL="", coins=[], sortKey="score", hideStable=true;
+let abortFlag=false, failedCoins=[], successCount=0;
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+
+async function apiFetch(path) {
+  const hdr = BASE_URL.includes("pro-api") ? "x-cg-pro-api-key" : "x-cg-demo-api-key";
+  const h = {}; h[hdr]=API_KEY;
+  const r = await fetch(BASE_URL+path, {headers:h});
+  if (!r.ok) throw new Error("HTTP "+r.status+": "+r.statusText);
+  return r.json();
+}
+
+function calcMA7(sp) {
+  if (!sp||sp.length<7) return null;
+  const n=sp.length, ppd=Math.floor(n/7);
+  let s=0;
+  for(let d=0;d<7;d++) s+=sp[Math.min((d+1)*ppd-1,n-1)];
+  return s/7;
+}
+
+function calcScore(vmr,c24h,c7d,ma7d,vol,c1h) {
+  const p24=c24h*100, p7=c7d*100;
+  const a=p24<0?0:p24<=2?p24/2*18:p24<=15?35:p24<=30?20:8;
+  const b=p7<0?0:p7<=5?p7/5*12:p7<=20?25:p7<=40?15:5;
+  const c=Math.min(25,vmr/0.08*25);
+  const d=vol>=1e9?15:vol>=1e8?10:vol>=1e7?6:vol>=1e6?3:0;
+  const bonus=(c1h>0&&c24h>0.005&&c7d>0.02)?5:0;
+  const adj=ma7d>18?-15:(ma7d<5&&c24h>0)?5:0;
+  return Math.min(100,Math.max(0,a+b+c+d+bonus+adj));
+}
+
+function ma7I(d){
+  if(d<0)  return {l:"Di bawah MA7",   bg:"var(--blue-bg)", fg:"var(--blue)"};
+  if(d<5)  return {l:"Fresh (<5%)",    bg:"var(--green-bg)",fg:"var(--green)"};
+  if(d<10) return {l:"Moderat 5-10%",  bg:"var(--amber-bg)",fg:"var(--amber)"};
+  if(d<18) return {l:"Extended 10-18%",bg:"var(--red-bg)",  fg:"var(--red)"};
+  return         {l:"Overextended!",  bg:"var(--red-bg)",  fg:"var(--red)"};
+}
+function vsI(v){
+  if(v===null) return {l:"...", bg:"var(--gray-bg)",fg:"var(--tx2)"};
+  if(v<0.8)   return {l:"Rendah (<0.8×)", bg:"var(--blue-bg)",fg:"var(--blue)"};
+  if(v<1.5)   return {l:"Normal 0.8-1.5×",bg:"var(--gray-bg)",fg:"var(--gray)"};
+  if(v<2.5)   return {l:"Elevated 1.5-2.5×",bg:"var(--amber-bg)",fg:"var(--amber)"};
+  return            {l:"SPIKE! >2.5×",bg:"var(--green-bg)",fg:"var(--green)"};
+}
+function sigI(ma7d,vs,sc){
+  if(vs!==null){
+    if(ma7d<8 &&vs>2)  return {l:"BREAKOUT — Beli",       bg:"var(--green-bg)",fg:"var(--green)"};
+    if(ma7d>15&&vs>2)  return {l:"EXHAUSTION — Hindari",  bg:"var(--red-bg)",  fg:"var(--red)"};
+    if(ma7d<8 &&vs<1)  return {l:"Konsolidasi — Tunggu",  bg:"var(--blue-bg)", fg:"var(--blue)"};
+    if(ma7d>15&&vs<1)  return {l:"Overextended — Tunggu", bg:"var(--amber-bg)",fg:"var(--amber)"};
+    if(ma7d<10&&vs>=1.5&&sc>=58) return {l:"Momentum Bagus",bg:"var(--green-bg)",fg:"var(--green-mid)"};
+  }
+  if(sc>=72) return {l:"Beli Kuat",   bg:"var(--green-bg)",fg:"var(--green)"};
+  if(sc>=58) return {l:"Potensi Naik",bg:"var(--green-bg)",fg:"var(--green-mid)"};
+  if(sc>=44) return {l:"Tunggu",      bg:"var(--amber-bg)",fg:"var(--amber)"};
+  return           {l:"Skip",         bg:"var(--red-bg)",  fg:"var(--red)"};
+}
+
+function fmtBig(n){
+  if(!n)return"—";
+  if(n>=1e12)return"$"+(n/1e12).toFixed(2)+"T";
+  if(n>=1e9) return"$"+(n/1e9).toFixed(2)+"B";
+  if(n>=1e6) return"$"+(n/1e6).toFixed(1)+"M";
+  return"$"+n.toFixed(0);
+}
+function fmtPct(v){
+  const p=(v*100).toFixed(2),cls=v>=0?"pos":"neg";
+  return`<span class="${cls}">${v>=0?"+":""}${p}%</span>`;
+}
+function badge(l,bg,fg){return`<span class="badge" style="background:${bg};color:${fg}">${l}</span>`;}
+
+function renderStats(){
+  const d=hideStable?coins.filter(c=>!c.stable):coins;
+  const loaded=d.filter(c=>c.vs!==null).length;
+  const brk=d.filter(c=>c.vs!==null&&c.ma7d<8&&c.vs>2).length;
+  const fresh=d.filter(c=>c.ma7d>=0&&c.ma7d<5).length;
+  const hi=d.filter(c=>c.score>=72).length;
+  const items=[
+    {l:"Koin ditampilkan",v:d.length,s:"dari top 100"},
+    {l:"Breakout Signal",v:brk,s:"MA7 fresh + spike"},
+    {l:"Zona Fresh",v:fresh,s:"MA7 distance < 5%"},
+    {l:"Skor tinggi (≥72)",v:hi,s:"kandidat beli"},
+    {l:"Vol Spike loaded",v:loaded+"/"+d.length,s:loaded===d.length?"lengkap":"dalam proses"},
+  ];
+  document.getElementById("stats").innerHTML=items.map(s=>
+    `<div class="stat-card"><div class="stat-label">${s.l}</div><div class="stat-val">${s.v}</div><div class="stat-sub">${s.s}</div></div>`
+  ).join("");
+}
+
+function renderTable(){
+  const display=hideStable?coins.filter(c=>!c.stable):coins;
+  const sorted=[...display].sort((a,b)=>{
+    if(sortKey==="score")return b.score-a.score;
+    if(sortKey==="rank") return a.rank-b.rank;
+    if(sortKey==="24h")  return b.c24h-a.c24h;
+    if(sortKey==="ma7d") return a.ma7d-b.ma7d;
+    if(sortKey==="vs")   return(b.vs||0)-(a.vs||0);
+    if(sortKey==="vol")  return b.vol-a.vol;
+    return 0;
+  });
+  document.getElementById("count-lbl").textContent=sorted.length+" koin";
+  const cols=["#","Token","Mkt Cap","Vol 24h","Vol/MC%","1h","24h","7d","MA7 Dist","Zona MA7","Vol Spike","Sinyal Kuadran","Skor"];
+  const aligns=[1,0,1,1,1,1,1,1,1,0,1,0,1];
+  const widths=[28,175,82,82,50,50,56,56,66,120,70,148,46];
+  document.getElementById("thead").innerHTML="<tr>"+cols.map((h,i)=>
+    `<th class="${aligns[i]?"":"L"}" style="width:${widths[i]}px">${h}</th>`).join("")+"</tr>";
+  document.getElementById("tbody").innerHTML=sorted.map((c,i)=>{
+    const mi=ma7I(c.ma7d),vi=vsI(c.vs),si=sigI(c.ma7d,c.vs,c.score);
+    const mc=c.ma7d<0?"var(--blue)":c.ma7d<5?"var(--green)":c.ma7d<10?"var(--amber)":"var(--red)";
+    const sc=c.score>=72?"sh":c.score>=58?"sm":c.score>=44?"sl":"sb";
+    const rb=i%2===0?"var(--bg0)":"var(--bg1)";
+    return`<tr style="background:${rb}">
+      <td style="color:var(--tx2);text-align:center">${i+1}</td>
+      <td class="L"><div class="tc">
+        ${c.img?`<img src="${c.img}" width="15" height="15" style="border-radius:50%;flex-shrink:0" loading="lazy">`:""}
+        <span class="tn">${c.name}</span>
+        <span class="ts">${c.sym}</span>
+      </div></td>
+      <td>${fmtBig(c.mcap)}</td>
+      <td>${fmtBig(c.vol)}</td>
+      <td>${(c.vmr*100).toFixed(1)}%</td>
+      <td>${fmtPct(c.c1h)}</td>
+      <td>${fmtPct(c.c24h)}</td>
+      <td>${fmtPct(c.c7d)}</td>
+      <td style="color:${mc};font-weight:500">${c.ma7d.toFixed(1)}%</td>
+      <td class="L">${badge(mi.l,mi.bg,mi.fg)}</td>
+      <td style="font-weight:500">${c.vs!==null?c.vs.toFixed(2)+"&times;":`<span style="color:var(--tx2)">...</span>`}</td>
+      <td class="L">${badge(si.l,si.bg,si.fg)}</td>
+      <td style="text-align:center"><span class="${sc}">${c.score.toFixed(0)}</span></td>
+    </tr>`;
+  }).join("");
+  renderStats();
+}
+
+async function fetchVolSpike(targets, label) {
+  const DELAY = BASE_URL.includes("pro-api") ? 320 : 2200;
+  const newFailed = [];
+  let loaded=0, ok=0, fail=0;
+  const startTime = Date.now();
+
+  document.getElementById("prog-wrap").style.display="block";
+  document.getElementById("done-wrap").style.display="none";
+  document.getElementById("retry-btn").style.display="none";
+  document.getElementById("prog-text").textContent="0/"+targets.length;
+  document.getElementById("prog-ok").textContent="0";
+  document.getElementById("prog-fail").textContent="0";
+  document.getElementById("prog-bar").style.width="0%";
+
+  for(let i=0;i<targets.length;i++){
+    if(abortFlag) break;
+    if(i>0) await sleep(DELAY);
+    if(abortFlag) break;
+
+    const t=targets[i];
+    let gotData=false;
+
+    // Attempt 1
+    try{
+      const chart=await apiFetch(`/coins/${t.id}/market_chart?vs_currency=usd&days=7&interval=daily`);
+      const vols=(chart.total_volumes||[]).map(v=>v[1]);
+      const past=vols.slice(-7,-1);
+      const avg=past.length>0?past.reduce((a,b)=>a+b,0)/past.length:null;
+      const vs=(avg&&avg>0)?t.vol/avg:null;
+      const idx=coins.findIndex(c=>c.id===t.id);
+      if(idx>=0) coins[idx].vs=vs;
+      gotData=true; ok++;
+    } catch(e){
+      // Retry setelah 5 detik jika 429
+      if(e.message.includes("429")){
+        await sleep(5000);
+        try{
+          const chart=await apiFetch(`/coins/${t.id}/market_chart?vs_currency=usd&days=7&interval=daily`);
+          const vols=(chart.total_volumes||[]).map(v=>v[1]);
+          const past=vols.slice(-7,-1);
+          const avg=past.length>0?past.reduce((a,b)=>a+b,0)/past.length:null;
+          const vs=(avg&&avg>0)?t.vol/avg:null;
+          const idx=coins.findIndex(c=>c.id===t.id);
+          if(idx>=0) coins[idx].vs=vs;
+          gotData=true; ok++;
+        } catch(e2){ fail++; newFailed.push(t); }
+      } else { fail++; newFailed.push(t); }
+    }
+
+    loaded++;
+    const pct=Math.round(loaded/targets.length*100);
+    const elapsed=(Date.now()-startTime)/1000;
+    const remaining=targets.length-loaded;
+    const etaSec=loaded>0?Math.round(elapsed/loaded*remaining):0;
+    const etaStr=etaSec>60?Math.round(etaSec/60)+"m "+Math.round(etaSec%60)+"d":etaSec+"d";
+
+    document.getElementById("prog-text").textContent=loaded+"/"+targets.length;
+    document.getElementById("prog-ok").textContent=ok;
+    document.getElementById("prog-fail").textContent=fail;
+    document.getElementById("prog-pct").textContent=pct+"%";
+    document.getElementById("prog-bar").style.width=pct+"%";
+    document.getElementById("eta").textContent=remaining>0?"~"+etaStr+" lagi":"selesai";
+    renderTable();
+  }
+
+  successCount=ok;
+  failedCoins=newFailed;
+  document.getElementById("prog-wrap").style.display="none";
+  document.getElementById("done-wrap").style.display="block";
+  document.getElementById("done-msg").textContent=ok+"/"+targets.length+" koin berhasil dimuat";
+
+  if(newFailed.length>0){
+    document.getElementById("done-fail-row").style.display="block";
+    document.getElementById("done-fail-msg").textContent=newFailed.length+" koin gagal";
+    document.getElementById("retry-count").textContent=newFailed.length;
+    document.getElementById("retry-btn").style.display="inline-block";
+  } else {
+    document.getElementById("done-fail-row").style.display="none";
+    document.getElementById("retry-btn").style.display="none";
+  }
+  renderTable();
+}
+
+async function loadData(){
+  abortFlag=false; failedCoins=[]; successCount=0;
+  document.getElementById("err-box").style.display="none";
+  document.getElementById("done-wrap").style.display="none";
+  document.getElementById("prog-wrap").style.display="none";
+  document.getElementById("retry-btn").style.display="none";
+  document.getElementById("ts").textContent="Mengambil data...";
+  document.getElementById("tbody").innerHTML=
+    `<tr><td colspan="13" style="text-align:center;padding:24px;color:var(--tx1)">
+      <i class="ti ti-loader" style="font-size:20px;display:block;margin-bottom:6px"></i>
+      Menghubungkan ke CoinGecko API...</td></tr>`;
+  try{
+    const markets=await apiFetch(
+      "/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1"+
+      "&sparkline=true&price_change_percentage=1h%2C24h%2C7d"
+    );
+    coins=markets.map((c,i)=>{
+      const sp=c.sparkline_in_7d?.price||[];
+      const ma7=calcMA7(sp);
+      const curP=c.current_price||0;
+      const ma7d=(ma7&&ma7>0)?(curP-ma7)/ma7*100:0;
+      const c1h=(c.price_change_percentage_1h_in_currency||0)/100;
+      const c24h=(c.price_change_percentage_24h_in_currency||0)/100;
+      const c7d=(c.price_change_percentage_7d_in_currency||0)/100;
+      const vmr=c.market_cap>0?c.total_volume/c.market_cap:0;
+      return{rank:i+1,id:c.id,name:c.name,sym:c.symbol.toUpperCase(),
+        mcap:c.market_cap,vol:c.total_volume,vmr,c1h,c24h,c7d,ma7d,
+        vs:null,score:calcScore(vmr,c24h,c7d,ma7d,c.total_volume,c1h),
+        stable:STABLE.has(c.symbol.toLowerCase()),img:c.image};
+    });
+    document.getElementById("ts").textContent="CoinGecko API · "+new Date().toLocaleString("id-ID");
+    renderTable();
+    await fetchVolSpike(coins.filter(c=>!c.stable), "non-stablecoin");
+  } catch(e){
+    const eb=document.getElementById("err-box");
+    eb.style.display="block";
+    eb.innerHTML=`<i class="ti ti-alert-circle" style="vertical-align:-1px"></i> Error: ${e.message}`;
+    document.getElementById("ts").textContent="Gagal terhubung";
+  }
+}
+
+function exportCSV(){
+  const display=hideStable?coins.filter(c=>!c.stable):coins;
+  const sorted=[...display].sort((a,b)=>b.score-a.score);
+  const hdr=["Rank","Nama","Ticker","MktCap","Vol24h","VolMC%","1h%","24h%","7d%","MA7Dist%","ZonaMA7","VolSpike","Sinyal","Skor"];
+  const rows=sorted.map((c,i)=>[
+    i+1,`"${c.name}"`,c.sym,c.mcap,c.vol,
+    (c.vmr*100).toFixed(2),(c.c1h*100).toFixed(2),(c.c24h*100).toFixed(2),(c.c7d*100).toFixed(2),
+    c.ma7d.toFixed(1),`"${ma7I(c.ma7d).l}"`,
+    c.vs!==null?c.vs.toFixed(2):"N/A",
+    `"${sigI(c.ma7d,c.vs,c.score).l}"`,c.score.toFixed(0)
+  ].join(","));
+  const blob=new Blob([[hdr.join(","),...rows].join("\n")],{type:"text/csv"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="crypto_"+new Date().toISOString().slice(0,10)+".csv";
+  a.click(); URL.revokeObjectURL(a.href);
+}
+
+// Event listeners
+document.getElementById("start-btn").addEventListener("click",()=>{
+  const key=document.getElementById("key-in").value.trim();
+  const plan=document.querySelector("input[name=plan]:checked").value;
+  const save=document.getElementById("save-key").checked;
+  const err=document.getElementById("setup-err");
+  if(!key.startsWith("CG-")){err.style.display="block";err.textContent="API key harus diawali CG-";return;}
+  err.style.display="none";
+  API_KEY=key; BASE_URL=plan==="pro"?"https://pro-api.coingecko.com/api/v3":"https://api.coingecko.com/api/v3";
+  if(save) localStorage.setItem("cg_key",key+"|"+plan);
+  document.getElementById("setup").style.display="none";
+  document.getElementById("main").style.display="block";
+  setupUI(); loadData();
+});
+document.getElementById("key-in").addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("start-btn").click();});
+
+function setupUI(){
+  document.getElementById("refresh-btn").addEventListener("click",()=>{abortFlag=true;setTimeout(loadData,150);});
+  document.getElementById("export-btn").addEventListener("click",exportCSV);
+  document.getElementById("logout-btn").addEventListener("click",()=>{
+    abortFlag=true; localStorage.removeItem("cg_key");
+    document.getElementById("main").style.display="none";
+    document.getElementById("setup").style.display="flex";
+    document.getElementById("key-in").value="";
+  });
+  document.getElementById("retry-btn").addEventListener("click",async()=>{
+    if(failedCoins.length===0) return;
+    const toRetry=[...failedCoins]; failedCoins=[];
+    document.getElementById("retry-btn").style.display="none";
+    await fetchVolSpike(toRetry,"retry");
+  });
+  document.getElementById("hide-stable").addEventListener("change",function(){hideStable=this.checked;renderTable();});
+  const sorts=[["score","Skor"],["rank","Rank"],["24h","24h %"],["ma7d","MA7 Dist"],["vs","Vol Spike"],["vol","Volume"]];
+  document.getElementById("sort-btns").innerHTML=sorts.map(([k,l])=>
+    `<button data-k="${k}" class="${k===sortKey?"active":""}">${l}</button>`).join("");
+  document.getElementById("sort-btns").addEventListener("click",e=>{
+    const btn=e.target.closest("button");if(!btn)return;
+    sortKey=btn.dataset.k;
+    document.querySelectorAll("#sort-btns button").forEach(b=>b.classList.toggle("active",b.dataset.k===sortKey));
+    renderTable();
+  });
+}
+
+// Auto-login dari localStorage
+const saved=localStorage.getItem("cg_key");
+if(saved){
+  const [k,p]=saved.split("|");
+  document.getElementById("key-in").value=k;
+  const radio=document.querySelector(`input[name=plan][value="${p||"demo"}"]`);
+  if(radio) radio.checked=true;
+  document.getElementById("save-key").checked=true;
+}
+</script>
+</body>
+</html>
