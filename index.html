@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Crypto Spot Dashboard — CoinGecko</title>
+<title>Crypto Spot Dashboard v4 — CoinGecko</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
 <style>
-:root {
-  --bg0:#ffffff;--bg1:#f7f8fa;--bg2:#eef0f4;
+:root{
+  --bg0:#fff;--bg1:#f7f8fa;--bg2:#eef0f4;
   --tx0:#111827;--tx1:#6b7280;--tx2:#9ca3af;
   --bd0:rgba(0,0,0,0.12);--bd1:rgba(0,0,0,0.07);--bd2:rgba(0,0,0,0.04);
   --green:#1b5e20;--green-bg:#e8f5e9;--green-mid:#2e7d32;
@@ -32,8 +32,8 @@
 }}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:var(--font);font-size:13px;background:var(--bg1);color:var(--tx0);min-height:100vh}
-.page{max-width:1400px;margin:0 auto;padding:16px}
-.card{background:var(--bg0);border:0.5px solid var(--bd0);border-radius:var(--rl);padding:16px 20px;margin-bottom:12px}
+.page{max-width:1500px;margin:0 auto;padding:16px}
+.card{background:var(--bg0);border:0.5px solid var(--bd0);border-radius:var(--rl);padding:14px 18px;margin-bottom:12px}
 button{font-family:var(--font);font-size:12px;padding:5px 12px;border:0.5px solid var(--bd0);border-radius:var(--r);background:transparent;color:var(--tx0);cursor:pointer}
 button:hover{background:var(--bg1)} button.active{background:var(--blue-bg);color:var(--blue);border-color:var(--blue)}
 button.btn-retry{background:var(--amber-bg);color:var(--amber);border-color:var(--amber)}
@@ -41,70 +41,58 @@ input[type=checkbox]{cursor:pointer;accent-color:var(--blue)}
 input[type=password],input[type=text]{font-family:var(--font);font-size:13px;padding:7px 10px;border:0.5px solid var(--bd0);border-radius:var(--r);background:var(--bg0);color:var(--tx0);width:100%}
 input:focus{outline:none;border-color:var(--blue)}
 .badge{display:inline-block;padding:1px 6px;border-radius:4px;font-size:11px;white-space:nowrap}
-.stat-card{background:var(--bg1);border-radius:var(--r);padding:10px 12px}
-.stat-label{font-size:11px;color:var(--tx1)} .stat-val{font-size:20px;font-weight:500;margin:2px 0} .stat-sub{font-size:10px;color:var(--tx2)}
+.sc{background:var(--bg0);border:0.5px solid var(--bd0);border-radius:var(--rl);padding:32px;max-width:440px;width:100%}
+.setup-btn{width:100%;padding:9px;font-size:13px;border-radius:var(--r);background:var(--blue-bg);color:var(--blue);border:0.5px solid var(--blue);cursor:pointer;margin-top:8px}
+.setup-btn:hover{opacity:.85}
+.warn-box{background:var(--amber-bg);color:var(--amber);border-radius:var(--r);padding:8px 10px;font-size:11px;margin-top:12px;line-height:1.5}
+.err-box{background:var(--red-bg);color:var(--red);border-radius:var(--r);padding:8px 10px;font-size:12px;margin-bottom:8px}
 .prog-track{height:3px;background:var(--bg2);border-radius:2px;overflow:hidden;margin-top:4px}
-.prog-bar{height:100%;background:var(--green-mid);border-radius:2px;transition:width 0.3s}
+.prog-bar{height:100%;background:var(--green-mid);border-radius:2px;transition:width .3s}
+.stat-card{background:var(--bg1);border-radius:var(--r);padding:10px 12px}
+.stat-label{font-size:11px;color:var(--tx1)} .stat-val{font-size:18px;font-weight:500;margin:2px 0} .stat-sub{font-size:10px;color:var(--tx2)}
 table{border-collapse:collapse;width:100%}
-th{padding:6px 8px;font-weight:500;font-size:11px;color:var(--tx1);border-bottom:0.5px solid var(--bd0);white-space:nowrap;text-align:right;background:var(--bg1)} th.L{text-align:left}
-td{padding:5px 8px;border-bottom:0.5px solid var(--bd1);text-align:right;white-space:nowrap} td.L{text-align:left}
+th{padding:5px 7px;font-weight:500;font-size:11px;color:var(--tx1);border-bottom:0.5px solid var(--bd0);white-space:nowrap;text-align:right;background:var(--bg1)} th.L{text-align:left}
+td{padding:4px 7px;border-bottom:0.5px solid var(--bd1);text-align:right;white-space:nowrap;font-size:12px} td.L{text-align:left}
 tr:hover td{background:var(--bg2)}
-.tc{display:flex;align-items:center;gap:5px}
-.tn{font-weight:500;max-width:110px;overflow:hidden;text-overflow:ellipsis}
-.ts{font-size:10px;color:var(--tx2)}
+.tc{display:flex;align-items:center;gap:4px}
+.tn{font-weight:500;max-width:100px;overflow:hidden;text-overflow:ellipsis}
+.ts2{font-size:10px;color:var(--tx2)}
 .pos{color:var(--green-mid);font-weight:500} .neg{color:var(--red);font-weight:500}
 .sh{color:var(--green);font-weight:500} .sm{color:var(--green-mid);font-weight:500}
 .sl{color:var(--amber);font-weight:500} .sb{color:var(--red);font-weight:500}
-.manip-row td{background:rgba(74,20,140,0.05) !important}
 #setup{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
-.sc{background:var(--bg0);border:0.5px solid var(--bd0);border-radius:var(--rl);padding:32px;max-width:440px;width:100%}
-.setup-btn{width:100%;padding:9px;font-size:13px;border-radius:var(--r);background:var(--blue-bg);color:var(--blue);border:0.5px solid var(--blue);cursor:pointer;margin-top:8px}
-.setup-btn:hover{opacity:0.85}
-.warn-box{background:var(--amber-bg);color:var(--amber);border-radius:var(--r);padding:8px 10px;font-size:11px;margin-top:12px;line-height:1.5}
-.err-box{background:var(--red-bg);color:var(--red);border-radius:var(--r);padding:8px 10px;font-size:12px;margin-bottom:8px}
 #main{display:none}
-.hdr{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.hdr{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px}
 .ctrl{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
 .tbl-wrap{overflow-x:auto;border-radius:var(--r);border:0.5px solid var(--bd0)}
 .foot{font-size:10px;color:var(--tx2);margin-top:8px;line-height:1.6}
-.legend-box{background:var(--bg1);border-radius:var(--r);padding:8px 12px;margin-bottom:8px;font-size:11px;line-height:1.8}
+.lgd{background:var(--bg1);border-radius:var(--r);padding:6px 10px;margin-bottom:8px;font-size:11px;line-height:2}
 </style>
 </head>
 <body>
 
 <div id="setup">
   <div class="sc">
-    <div style="font-size:28px;margin-bottom:4px">⚡</div>
-    <div style="font-size:20px;font-weight:500;margin-bottom:2px">Crypto Spot Dashboard</div>
-    <div style="font-size:13px;color:var(--tx1);margin-bottom:20px">MA7 Distance + Volume Spike · Anti-Manipulasi · CoinGecko API</div>
+    <div style="font-size:26px;margin-bottom:4px">⚡</div>
+    <div style="font-size:18px;font-weight:500;margin-bottom:2px">Crypto Spot Dashboard v4</div>
+    <div style="font-size:12px;color:var(--tx1);margin-bottom:18px">MA7 · Vol Spike · Momentum Health · Anti-Manipulasi</div>
     <div style="margin-bottom:12px">
-      <div style="font-size:12px;color:var(--tx1);margin-bottom:4px">CoinGecko API Key (CG-...)</div>
+      <div style="font-size:12px;color:var(--tx1);margin-bottom:4px">CoinGecko API Key</div>
       <input type="password" id="key-in" placeholder="CG-xxxxxxxxxxxxxxxxxxxxxxxx">
-      <div style="font-size:11px;color:var(--tx2);margin-top:4px">
-        Gratis di <a href="https://www.coingecko.com/en/api/pricing" target="_blank" style="color:var(--blue)">coingecko.com/en/api/pricing</a> (Demo Plan)
-      </div>
+      <div style="font-size:11px;color:var(--tx2);margin-top:4px">Gratis di <a href="https://www.coingecko.com/en/api/pricing" target="_blank" style="color:var(--blue)">coingecko.com/en/api/pricing</a></div>
     </div>
     <div style="margin-bottom:12px">
       <div style="font-size:12px;color:var(--tx1);margin-bottom:4px">Plan</div>
       <div style="display:flex;gap:12px">
-        <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer">
-          <input type="radio" name="plan" value="demo" checked> Demo (gratis · 30 req/min)
-        </label>
-        <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer">
-          <input type="radio" name="plan" value="pro"> Pro (250+ req/min)
-        </label>
+        <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer"><input type="radio" name="plan" value="demo" checked> Demo</label>
+        <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer"><input type="radio" name="plan" value="pro"> Pro</label>
       </div>
     </div>
     <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;margin-bottom:14px">
-      <input type="checkbox" id="save-key"> Simpan key di browser (localStorage)
+      <input type="checkbox" id="save-key"> Simpan key di browser
     </label>
-    <button class="setup-btn" id="start-btn">
-      <i class="ti ti-rocket" style="font-size:14px;vertical-align:-2px"></i> Mulai Dashboard
-    </button>
-    <div class="warn-box">
-      <i class="ti ti-shield-lock" style="vertical-align:-1px"></i>
-      API key tidak disimpan di file HTML. Aman untuk GitHub Pages publik.
-    </div>
+    <button class="setup-btn" id="start-btn">Mulai Dashboard</button>
+    <div class="warn-box">API key tidak disimpan di file HTML — aman untuk GitHub Pages publik.</div>
     <div id="setup-err" style="display:none;margin-top:8px" class="err-box"></div>
   </div>
 </div>
@@ -113,68 +101,51 @@ tr:hover td{background:var(--bg2)}
   <div class="card">
     <div class="hdr">
       <div>
-        <div style="font-size:15px;font-weight:500">
-          <i class="ti ti-chart-bar" style="font-size:15px;vertical-align:-2px;margin-right:4px"></i>
-          Analisis Spot Kripto — Real-Time
-        </div>
-        <div id="ts" style="font-size:11px;color:var(--tx1);margin-top:2px">Menghubungkan...</div>
+        <div style="font-size:15px;font-weight:500">Analisis Spot Kripto — Real-Time</div>
+        <div id="ts" style="font-size:11px;color:var(--tx1);margin-top:1px">Menghubungkan...</div>
       </div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap">
-        <button id="retry-btn" class="btn-retry" style="display:none">
-          <i class="ti ti-refresh-alert" style="font-size:13px;vertical-align:-2px"></i>
-          Retry Gagal (<span id="retry-count">0</span>)
-        </button>
-        <button id="refresh-btn">
-          <i class="ti ti-refresh" style="font-size:13px;vertical-align:-2px"></i> Refresh
-        </button>
-        <button id="export-btn">
-          <i class="ti ti-download" style="font-size:13px;vertical-align:-2px"></i> CSV
-        </button>
-        <button id="logout-btn" style="color:var(--tx2);font-size:11px">
-          <i class="ti ti-key" style="font-size:12px;vertical-align:-1px"></i> Ganti Key
-        </button>
+      <div style="display:flex;gap:5px;flex-wrap:wrap">
+        <button id="retry-btn" class="btn-retry" style="display:none">Retry Gagal (<span id="retry-cnt">0</span>)</button>
+        <button id="refresh-btn">Refresh</button>
+        <button id="export-btn">Export CSV</button>
+        <button id="logout-btn" style="color:var(--tx2);font-size:11px">Ganti Key</button>
       </div>
     </div>
 
     <div id="err-box" style="display:none" class="err-box"></div>
 
     <div id="prog-wrap" style="display:none;margin-bottom:8px">
-      <div style="display:flex;justify-content:space-between;align-items:center">
+      <div style="display:flex;justify-content:space-between">
         <span style="font-size:11px;color:var(--tx1)">
-          <i class="ti ti-clock" style="font-size:11px;vertical-align:-1px"></i>
-          Mengambil Vol Spike...
-          <span id="prog-text" style="font-weight:500">0/0</span>
-          <span style="color:var(--tx2)"> · sukses: <span id="prog-ok" style="color:var(--green-mid)">0</span>
-          · gagal: <span id="prog-fail" style="color:var(--red)">0</span></span>
+          Vol Spike: <span id="prog-text" style="font-weight:500">0/0</span>
+          · sukses:<span id="prog-ok" style="color:var(--green-mid)"> 0</span>
+          · gagal:<span id="prog-fail" style="color:var(--red)"> 0</span>
+          · ETA: <span id="eta">—</span>
         </span>
         <span id="prog-pct" style="font-size:11px;font-weight:500">0%</span>
       </div>
       <div class="prog-track"><div class="prog-bar" id="prog-bar" style="width:0%"></div></div>
-      <div style="font-size:10px;color:var(--tx2);margin-top:3px">
-        Delay 2.2 detik/koin (Demo plan) · ETA: <span id="eta">—</span>
+    </div>
+    <div id="done-wrap" style="display:none;margin-bottom:6px">
+      <div style="font-size:11px;color:var(--green-mid)"><span id="done-msg"></span></div>
+      <div id="done-fail-row" style="display:none;font-size:11px;color:var(--amber)">
+        <span id="done-fail-msg"></span> — klik Retry Gagal.
       </div>
     </div>
 
-    <div id="done-wrap" style="display:none;margin-bottom:8px">
-      <div id="done-ok" style="font-size:11px;color:var(--green-mid)">
-        <i class="ti ti-circle-check" style="font-size:12px;vertical-align:-1px"></i>
-        <span id="done-msg"></span>
-      </div>
-      <div id="done-fail-row" style="display:none;font-size:11px;color:var(--amber);margin-top:3px">
-        <i class="ti ti-alert-triangle" style="font-size:12px;vertical-align:-1px"></i>
-        <span id="done-fail-msg"></span> — klik <strong>Retry Gagal</strong> untuk coba ulang.
-      </div>
+    <div id="vol-trend-note" style="display:none;font-size:11px;color:var(--tx1);background:var(--bg1);border-radius:var(--r);padding:5px 10px;margin-bottom:8px">
+      <i class="ti ti-history" style="font-size:12px;vertical-align:-1px"></i>
+      Vol/MC Trend dibandingkan dengan sesi sebelumnya (<span id="prev-date">—</span>)
     </div>
 
-    <div id="stats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:10px"></div>
+    <div id="stats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:6px;margin-bottom:10px"></div>
 
-    <!-- Legend sinyal -->
-    <div class="legend-box">
-      <span style="font-weight:500;color:var(--tx1)">Keterangan sinyal:</span>
-      <span style="background:var(--green-bg);color:var(--green);padding:1px 6px;border-radius:4px;margin:0 3px">BREAKOUT</span> MA7&lt;8% + Spike&gt;2× + Vol&gt;$1M
-      <span style="background:var(--red-bg);color:var(--red);padding:1px 6px;border-radius:4px;margin:0 3px">EXHAUSTION</span> MA7&gt;15% + Spike&gt;2× + Vol&gt;$1M
-      <span style="background:var(--purple-bg);color:var(--purple);padding:1px 6px;border-radius:4px;margin:0 3px">Potensi Manipulasi</span> Spike&gt;2× + Vol&lt;$1M + Harga turun
-      <span style="background:var(--amber-bg);color:var(--amber);padding:1px 6px;border-radius:4px;margin:0 3px">Vol Tipis</span> Vol 24h &lt; $1 Juta
+    <div class="lgd">
+      <span style="font-weight:500;color:var(--tx1)">Sinyal:</span>
+      <span class="badge" style="background:var(--green-bg);color:var(--green)">BREAKOUT</span> MA7&lt;8% + Spike&gt;2× + Vol&gt;$1M
+      <span class="badge" style="background:var(--red-bg);color:var(--red)">EXHAUSTION</span> MA7&gt;15% + Spike&gt;2× + Vol&gt;$1M
+      <span class="badge" style="background:var(--purple-bg);color:var(--purple)">Potensi Manipulasi</span> Spike tinggi + Vol tipis + harga turun
+      <span class="badge" style="background:var(--amber-bg);color:var(--amber)">MHR Rendah</span> 7d%/24h% &lt; 0.3 → penalti −10 pts (kasus ICP/DOT)
     </div>
 
     <div class="ctrl">
@@ -191,126 +162,170 @@ tr:hover td{background:var(--bg2)}
     </div>
 
     <div class="tbl-wrap">
-      <table style="min-width:960px">
+      <table style="min-width:1080px">
         <thead id="thead"></thead>
         <tbody id="tbody"></tbody>
       </table>
     </div>
 
     <div class="foot">
-      MA7 = rata-rata 7 harga harian dari sparkline CoinGecko ·
-      Vol Spike = Vol 24h ÷ Rata-rata Vol Harian 6 Hari Lalu ·
-      <strong>Sinyal BREAKOUT/EXHAUSTION hanya valid jika Vol 24h &gt; $1 Juta</strong> (filter anti-manipulasi) ·
-      Skor: 24h%(35) + 7d%(25) + Vol/MC(25) + Likuiditas(15) + Bonus Triple + Adj MA7 ·
-      Bukan saran investasi.
+      MHR = Momentum Health Ratio (7d%÷24h%) — nilai tinggi = momentum sehat, rendah = spike sekarat ·
+      Vol/MC Trend = perbandingan dengan sesi sebelumnya (localStorage) ·
+      Penalti skor: MHR&lt;0.3 → −10pts · Dead cat (7d negatif + 24h positif) → −15pts ·
+      Sinyal kuadran hanya valid jika Vol 24h &gt; $1 Juta ·
+      <strong>Bukan saran investasi.</strong>
     </div>
   </div>
 </div>
 
 <script>
-const STABLE = new Set([
-  "usdt","usdc","dai","tusd","busd","usdp","usdn","usdd","frax","lusd","gusd","crvusd",
-  "usde","pyusd","usds","usd1","rlusd","usdg","usdf","usdtb","bfusd","gho","usd0",
-  "usyc","buidl","usdy","jtrsy","ustb","eutbl","ousg","fdusd","eurs","eurc","aeur"
-]);
+const STABLE=new Set(["usdt","usdc","dai","tusd","busd","usdp","usdn","usdd","frax","lusd","gusd","crvusd","usde","pyusd","usds","usd1","rlusd","usdg","usdf","usdtb","bfusd","gho","usd0","usyc","buidl","usdy","jtrsy","ustb","eutbl","ousg","fdusd","eurs","eurc","aeur"]);
+const MIN_VOL=1_000_000;
 
-const MIN_VOL_SIGNAL = 1_000_000; // $1M minimum untuk sinyal kuadran valid
+let API_KEY="",BASE_URL="",coins=[],sortKey="score",hideStable=true,hideThinVol=false,abortFlag=false,failedCoins=[];
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 
-let API_KEY="", BASE_URL="", coins=[], sortKey="score", hideStable=true, hideThinVol=false;
-let abortFlag=false, failedCoins=[];
-const sleep = ms => new Promise(r=>setTimeout(r,ms));
-
-async function apiFetch(path) {
-  const hdr = BASE_URL.includes("pro-api") ? "x-cg-pro-api-key" : "x-cg-demo-api-key";
-  const h = {}; h[hdr]=API_KEY;
-  const r = await fetch(BASE_URL+path, {headers:h});
-  if (!r.ok) throw new Error("HTTP "+r.status+": "+r.statusText);
+async function apiFetch(p){
+  const hdr=BASE_URL.includes("pro-api")?"x-cg-pro-api-key":"x-cg-demo-api-key";
+  const h={};h[hdr]=API_KEY;
+  const r=await fetch(BASE_URL+p,{headers:h});
+  if(!r.ok)throw new Error("HTTP "+r.status);
   return r.json();
 }
 
-function calcMA7(sp) {
-  if (!sp||sp.length<7) return null;
-  const n=sp.length, ppd=Math.floor(n/7);
-  let s=0;
-  for(let d=0;d<7;d++) s+=sp[Math.min((d+1)*ppd-1,n-1)];
+function calcMA7(sp){
+  if(!sp||sp.length<7)return null;
+  const n=sp.length,ppd=Math.floor(n/7);
+  let s=0;for(let d=0;d<7;d++)s+=sp[Math.min((d+1)*ppd-1,n-1)];
   return s/7;
 }
 
-function calcScore(vmr,c24h,c7d,ma7d,vol,c1h) {
+// ── MOMENTUM HEALTH RATIO ──
+// MHR = 7d% / 24h% (keduanya positif)
+// Tinggi = sehat (7d trend > 24h spike)
+// Rendah = exhaustion / spike sekarat
+function calcMHR(c24h,c7d){
+  const p24=c24h*100, p7=c7d*100;
+  if(p7<=0||p24<=0)return null;
+  return p7/p24;
+}
+
+function calcScore(vmr,c24h,c7d,ma7d,vol,c1h){
   const p24=c24h*100, p7=c7d*100;
   const a=p24<0?0:p24<=2?p24/2*18:p24<=15?35:p24<=30?20:8;
   const b=p7<0?0:p7<=5?p7/5*12:p7<=20?25:p7<=40?15:5;
   const c=Math.min(25,vmr/0.08*25);
   const d=vol>=1e9?15:vol>=1e8?10:vol>=1e7?6:vol>=1e6?3:0;
   const bonus=(c1h>0&&c24h>0.005&&c7d>0.02)?5:0;
-  const adj=ma7d>18?-15:(ma7d<5&&c24h>0)?5:0;
-  return Math.min(100,Math.max(0,a+b+c+d+bonus+adj));
+  const ma7adj=ma7d>18?-15:(ma7d<5&&c24h>0)?5:0;
+  // Penalti MHR: spike sekarat
+  const mhr=calcMHR(c24h,c7d);
+  const mhrPenalty=mhr!==null&&mhr<0.3?-10:0;
+  // Penalti dead cat: 7d negatif tapi 24h spike besar
+  const deadCat=(p7<0&&p24>2)?-15:0;
+  return Math.min(100,Math.max(0,a+b+c+d+bonus+ma7adj+mhrPenalty+deadCat));
 }
 
-function isThinVol(vol) { return vol < MIN_VOL_SIGNAL; }
+function isThin(vol){return vol<MIN_VOL;}
 
 function ma7I(d){
-  if(d<0)  return {l:"Di bawah MA7",   bg:"var(--blue-bg)", fg:"var(--blue)"};
-  if(d<5)  return {l:"Fresh (<5%)",    bg:"var(--green-bg)",fg:"var(--green)"};
-  if(d<10) return {l:"Moderat 5-10%",  bg:"var(--amber-bg)",fg:"var(--amber)"};
-  if(d<18) return {l:"Extended 10-18%",bg:"var(--red-bg)",  fg:"var(--red)"};
-  return         {l:"Overextended!",  bg:"var(--red-bg)",  fg:"var(--red)"};
+  if(d<0)  return{l:"Di bawah MA7",   bg:"var(--blue-bg)", fg:"var(--blue)"};
+  if(d<5)  return{l:"Fresh (<5%)",    bg:"var(--green-bg)",fg:"var(--green)"};
+  if(d<10) return{l:"Moderat 5-10%",  bg:"var(--amber-bg)",fg:"var(--amber)"};
+  if(d<18) return{l:"Extended 10-18%",bg:"var(--red-bg)",  fg:"var(--red)"};
+  return         {l:"Overextended",   bg:"var(--red-bg)",  fg:"var(--red)"};
 }
 
-function vsI(v, vol) {
-  const thin = isThinVol(vol);
-  if(v===null) return {l:"...", bg:"var(--gray-bg)",fg:"var(--tx2)", thin:false};
-  const thinLabel = thin ? " ⚠️" : "";
-  if(v<0.8)  return {l:"Rendah (<0.8×)"+thinLabel,  bg:thin?"var(--amber-bg)":"var(--blue-bg)", fg:thin?"var(--amber)":"var(--blue)", thin};
-  if(v<1.5)  return {l:"Normal 0.8-1.5×"+thinLabel, bg:thin?"var(--amber-bg)":"var(--gray-bg)", fg:thin?"var(--amber)":"var(--gray)", thin};
-  if(v<2.5)  return {l:"Elevated 1.5-2.5×"+thinLabel,bg:thin?"var(--amber-bg)":"var(--amber-bg)",fg:"var(--amber)", thin};
-  return            {l:"SPIKE! >2.5×"+thinLabel,    bg:thin?"var(--amber-bg)":"var(--green-bg)", fg:thin?"var(--amber)":"var(--green)", thin};
+function mhrI(mhr,c24h,c7d){
+  const p7=c7d*100,p24=c24h*100;
+  if(p7<0&&p24>2)     return{l:"Dead Cat",       bg:"var(--red-bg)",    fg:"var(--red)",    tip:"7d turun tapi 24h spike"};
+  if(p7<0)             return{l:"Downtrend",      bg:"var(--red-bg)",    fg:"var(--red)",    tip:"7d negatif"};
+  if(p7>0&&p24<=0)     return{l:"Pullback",       bg:"var(--blue-bg)",   fg:"var(--blue)",   tip:"7d+ tapi 24h koreksi"};
+  if(mhr===null)       return{l:"—",              bg:"var(--gray-bg)",   fg:"var(--tx2)",    tip:""};
+  if(mhr<0.3)          return{l:"Spike Sekarat",  bg:"var(--red-bg)",    fg:"var(--red)",    tip:"7d/24h="+mhr.toFixed(2)};
+  if(mhr<0.8)          return{l:"Waspada",        bg:"var(--amber-bg)",  fg:"var(--amber)",  tip:"7d/24h="+mhr.toFixed(2)};
+  if(mhr<1.5)          return{l:"Sehat",          bg:"var(--green-bg)",  fg:"var(--green)",  tip:"7d/24h="+mhr.toFixed(2)};
+  return               {l:"Akumulasi",            bg:"var(--blue-bg)",   fg:"var(--blue)",   tip:"7d/24h="+mhr.toFixed(2)};
 }
 
-// ── FUNGSI SINYAL UTAMA — dengan filter anti-manipulasi ──
-function sigI(ma7d, vs, sc, vol, c24h) {
-  const thin = isThinVol(vol);
+function vsI(v,vol){
+  const thin=isThin(vol);
+  if(v===null)return{l:"...",bg:"var(--gray-bg)",fg:"var(--tx2)"};
+  const sfx=thin?" ⚠":"";
+  if(v<0.8)  return{l:"Rendah"+sfx,   bg:thin?"var(--amber-bg)":"var(--blue-bg)", fg:thin?"var(--amber)":"var(--blue)"};
+  if(v<1.5)  return{l:"Normal"+sfx,   bg:thin?"var(--amber-bg)":"var(--gray-bg)", fg:thin?"var(--amber)":"var(--gray)"};
+  if(v<2.5)  return{l:"Elevated"+sfx, bg:"var(--amber-bg)",fg:"var(--amber)"};
+  return          {l:"SPIKE"+sfx,    bg:thin?"var(--amber-bg)":"var(--green-bg)", fg:thin?"var(--amber)":"var(--green)"};
+}
 
-  // Deteksi potensi manipulasi: spike tinggi + volume tipis + harga turun
-  if (vs !== null && vs > 2 && thin && c24h <= 0) {
-    return {l:"Potensi Manipulasi!", bg:"var(--purple-bg)", fg:"var(--purple)", manip:true};
+function trendI(trend){
+  if(!trend)return{l:"—",c:"var(--tx2)"};
+  if(trend==="↑↑↑")return{l:"↑↑↑",c:"var(--green)"};
+  if(trend==="↑↑") return{l:"↑↑", c:"var(--green-mid)"};
+  if(trend==="↑")  return{l:"↑",  c:"var(--green-mid)"};
+  if(trend==="→")  return{l:"→",  c:"var(--tx2)"};
+  if(trend==="↓")  return{l:"↓",  c:"var(--amber)"};
+  if(trend==="↓↓") return{l:"↓↓", c:"var(--red)"};
+  if(trend==="↓↓↓")return{l:"↓↓↓",c:"var(--red)"};
+  return{l:trend,c:"var(--tx2)"};
+}
+
+function sigI(ma7d,vs,sc,vol,c24h,c7d,mhr){
+  const thin=isThin(vol);
+  const p7=c7d*100,p24=c24h*100;
+  if(vs!==null&&vs>2&&thin&&c24h<=0) return{l:"Potensi Manipulasi!",bg:"var(--purple-bg)",fg:"var(--purple)"};
+  if(thin&&vs!==null&&vs>1.5)        return{l:"Vol Tipis — Waspadai",bg:"var(--amber-bg)",fg:"var(--amber)"};
+  if(mhr!==null&&mhr<0.3&&p24>3)    return{l:"Spike Sekarat",bg:"var(--red-bg)",fg:"var(--red)"};
+  if(p7<0&&p24>2)                    return{l:"Dead Cat Bounce",bg:"var(--red-bg)",fg:"var(--red)"};
+  if(vs!==null&&!thin){
+    if(ma7d<8 &&vs>2)  return{l:"BREAKOUT — Beli",       bg:"var(--green-bg)",fg:"var(--green)"};
+    if(ma7d>15&&vs>2)  return{l:"EXHAUSTION — Hindari",  bg:"var(--red-bg)",  fg:"var(--red)"};
+    if(ma7d<8 &&vs<1)  return{l:"Konsolidasi — Tunggu",  bg:"var(--blue-bg)", fg:"var(--blue)"};
+    if(ma7d>15&&vs<1)  return{l:"Overextended — Tunggu", bg:"var(--amber-bg)",fg:"var(--amber)"};
+    if(ma7d<10&&vs>=1.5&&sc>=58)return{l:"Momentum Bagus",bg:"var(--green-bg)",fg:"var(--green-mid)"};
   }
-
-  // Volume tipis: sinyal kuadran tidak valid, tampilkan peringatan
-  if (thin && vs !== null && vs > 1.5) {
-    return {l:"Vol Tipis — Waspadai", bg:"var(--amber-bg)", fg:"var(--amber)", manip:false};
-  }
-
-  // Sinyal kuadran — HANYA jika Vol 24h > $1M
-  if (vs !== null && !thin) {
-    if (ma7d<8  && vs>2)  return {l:"BREAKOUT — Beli",        bg:"var(--green-bg)", fg:"var(--green)"};
-    if (ma7d>15 && vs>2)  return {l:"EXHAUSTION — Hindari",   bg:"var(--red-bg)",   fg:"var(--red)"};
-    if (ma7d<8  && vs<1)  return {l:"Konsolidasi — Tunggu",   bg:"var(--blue-bg)",  fg:"var(--blue)"};
-    if (ma7d>15 && vs<1)  return {l:"Overextended — Tunggu",  bg:"var(--amber-bg)", fg:"var(--amber)"};
-    if (ma7d<10 && vs>=1.5 && sc>=58) return {l:"Momentum Bagus", bg:"var(--green-bg)", fg:"var(--green-mid)"};
-  }
-
-  // Fallback skor (jika vol tipis atau spike belum dimuat)
-  const suffix = thin ? " (vol tipis)" : "";
-  if (sc>=72) return {l:"Beli Kuat"+suffix,   bg:"var(--green-bg)", fg:"var(--green)"};
-  if (sc>=58) return {l:"Potensi Naik"+suffix, bg:"var(--green-bg)", fg:"var(--green-mid)"};
-  if (sc>=44) return {l:"Tunggu"+suffix,       bg:"var(--amber-bg)", fg:"var(--amber)"};
-  return            {l:"Skip",                 bg:"var(--red-bg)",   fg:"var(--red)"};
+  const sfx=thin?" (vol tipis)":"";
+  if(sc>=72)return{l:"Beli Kuat"+sfx,   bg:"var(--green-bg)",fg:"var(--green)"};
+  if(sc>=58)return{l:"Potensi Naik"+sfx, bg:"var(--green-bg)",fg:"var(--green-mid)"};
+  if(sc>=44)return{l:"Tunggu"+sfx,       bg:"var(--amber-bg)",fg:"var(--amber)"};
+  return         {l:"Skip",              bg:"var(--red-bg)",  fg:"var(--red)"};
 }
 
-function fmtVol(n) {
-  if (!n) return "—";
-  if (n>=1e9) return "$"+(n/1e9).toFixed(2)+"B";
-  if (n>=1e6) return "$"+(n/1e6).toFixed(1)+"M";
-  if (n>=1e3) return "$"+(n/1e3).toFixed(0)+"K";
-  return "$"+n.toFixed(0);
+// ── localStorage snapshot untuk Vol/MC Trend ──
+function saveSnapshot(cs){
+  const snap={ts:new Date().toISOString(),coins:cs.map(c=>({id:c.id,vmr:c.vmr}))};
+  localStorage.setItem("cg_vmr_snap",JSON.stringify(snap));
 }
-function fmtMC(n) {
-  if (!n) return "—";
-  if (n>=1e12) return "$"+(n/1e12).toFixed(2)+"T";
-  if (n>=1e9)  return "$"+(n/1e9).toFixed(2)+"B";
-  if (n>=1e6)  return "$"+(n/1e6).toFixed(1)+"M";
-  return "$"+n.toFixed(0);
+function loadSnapshot(){
+  try{const s=localStorage.getItem("cg_vmr_snap");return s?JSON.parse(s):null;}catch{return null;}
+}
+function getVMRTrend(id,curVMR,snap){
+  if(!snap)return null;
+  const prev=snap.coins.find(c=>c.id===id);
+  if(!prev||!prev.vmr)return null;
+  const chg=(curVMR-prev.vmr)/prev.vmr;
+  if(chg>0.50)return"↑↑↑";
+  if(chg>0.20)return"↑↑";
+  if(chg>0.05)return"↑";
+  if(chg>-0.05)return"→";
+  if(chg>-0.20)return"↓";
+  if(chg>-0.50)return"↓↓";
+  return"↓↓↓";
+}
+
+function fmtVol(n){
+  if(!n)return"—";
+  if(n>=1e9)return"$"+(n/1e9).toFixed(2)+"B";
+  if(n>=1e6)return"$"+(n/1e6).toFixed(1)+"M";
+  if(n>=1e3)return"$"+(n/1e3).toFixed(0)+"K";
+  return"$"+n.toFixed(0);
+}
+function fmtMC(n){
+  if(!n)return"—";
+  if(n>=1e12)return"$"+(n/1e12).toFixed(2)+"T";
+  if(n>=1e9) return"$"+(n/1e9).toFixed(2)+"B";
+  if(n>=1e6) return"$"+(n/1e6).toFixed(1)+"M";
+  return"$"+n.toFixed(0);
 }
 function fmtPct(v){
   const p=(v*100).toFixed(2),cls=v>=0?"pos":"neg";
@@ -318,37 +333,41 @@ function fmtPct(v){
 }
 function badge(l,bg,fg){return`<span class="badge" style="background:${bg};color:${fg}">${l}</span>`;}
 
+let prevSnap=null;
+
 function renderStats(){
-  const d = getDisplay();
+  const d=getDisplay();
   const loaded=d.filter(c=>c.vs!==null).length;
-  const brk=d.filter(c=>c.vs!==null&&!isThinVol(c.vol)&&c.ma7d<8&&c.vs>2).length;
-  const manip=d.filter(c=>c.vs!==null&&c.vs>2&&isThinVol(c.vol)&&c.c24h<=0).length;
+  const brk=d.filter(c=>c.vs!==null&&!isThin(c.vol)&&c.ma7d<8&&c.vs>2).length;
+  const manip=d.filter(c=>c.vs!==null&&c.vs>2&&isThin(c.vol)&&c.c24h<=0).length;
+  const sek=d.filter(c=>c.mhr!==null&&c.mhr<0.3&&c.c24h*100>3).length;
   const fresh=d.filter(c=>c.ma7d>=0&&c.ma7d<5).length;
-  const hi=d.filter(c=>c.score>=72&&!isThinVol(c.vol)).length;
+  const hi=d.filter(c=>c.score>=72&&!isThin(c.vol)).length;
   const items=[
-    {l:"Koin ditampilkan",   v:d.length,    s:"dari top 100"},
-    {l:"Breakout Signal",    v:brk,         s:"MA7 fresh + spike valid"},
-    {l:"Zona Fresh",         v:fresh,       s:"MA7 distance < 5%"},
-    {l:"Skor tinggi (≥72)",  v:hi,          s:"vol > $1M"},
-    {l:"Potensi Manipulasi", v:manip,       s:"spike tipis + harga turun"},
-    {l:"Vol Spike loaded",   v:loaded+"/"+d.length, s:loaded===d.length?"lengkap":"dalam proses"},
+    {l:"Koin",v:d.length,s:"dari top 100"},
+    {l:"Breakout",v:brk,s:"MA7 fresh + spike valid"},
+    {l:"Zona Fresh",v:fresh,s:"MA7 distance < 5%"},
+    {l:"Skor ≥72",v:hi,s:"vol > $1M"},
+    {l:"Spike Sekarat",v:sek,s:"MHR < 0.3",warn:sek>0},
+    {l:"Potensi Manip",v:manip,s:"spike + vol tipis + turun",warn:manip>0},
+    {l:"Vol Spike",v:loaded+"/"+d.length,s:"dimuat"},
   ];
-  document.getElementById("stats").innerHTML=items.map((s,i)=>`
-    <div class="stat-card" ${i===4&&s.v>0?`style="border:0.5px solid var(--purple);"`:"" }>
+  document.getElementById("stats").innerHTML=items.map(s=>
+    `<div class="stat-card" ${s.warn?'style="border:0.5px solid var(--red)"':""}>
       <div class="stat-label">${s.l}</div>
-      <div class="stat-val" ${i===4&&s.v>0?`style="color:var(--purple)"`:""}>${s.v}</div>
+      <div class="stat-val" ${s.warn?'style="color:var(--red)"':""}>${s.v}</div>
       <div class="stat-sub">${s.s}</div>
     </div>`).join("");
 }
 
-function getDisplay() {
-  let d = hideStable ? coins.filter(c=>!c.stable) : coins;
-  if (hideThinVol) d = d.filter(c=>!isThinVol(c.vol));
+function getDisplay(){
+  let d=hideStable?coins.filter(c=>!c.stable):coins;
+  if(hideThinVol)d=d.filter(c=>!isThin(c.vol));
   return d;
 }
 
 function renderTable(){
-  const display = getDisplay();
+  const display=getDisplay();
   const sorted=[...display].sort((a,b)=>{
     if(sortKey==="score")return b.score-a.score;
     if(sortKey==="rank") return a.rank-b.rank;
@@ -356,44 +375,54 @@ function renderTable(){
     if(sortKey==="ma7d") return a.ma7d-b.ma7d;
     if(sortKey==="vs")   return(b.vs||0)-(a.vs||0);
     if(sortKey==="vol")  return b.vol-a.vol;
+    if(sortKey==="mhr")  return(b.mhr||0)-(a.mhr||0);
+    if(sortKey==="trend"){
+      const o=["↑↑↑","↑↑","↑","→","↓","↓↓","↓↓↓","—"];
+      return o.indexOf(a.trend||"—")-o.indexOf(b.trend||"—");
+    }
     return 0;
   });
   document.getElementById("count-lbl").textContent=sorted.length+" koin";
 
-  const cols=["#","Token","Mkt Cap","Vol 24h","Vol/MC%","1h","24h","7d","MA7 Dist","Zona MA7","Vol Spike","Sinyal Kuadran","Skor"];
-  const aligns=[1,0,1,1,1,1,1,1,1,0,1,0,1];
-  const widths=[28,175,80,90,50,50,56,56,66,120,85,160,46];
+  const cols=["#","Token","MktCap","Vol 24h","Vol/MC%","1h","24h","7d","MA7 Dist","Zona MA7","MHR","Momentum","Vol/MC Trend","Vol Spike","Sinyal Kuadran","Skor"];
+  const aligns=[1,0,1,1,1,1,1,1,1,0,1,0,1,1,0,1];
+  const widths=[24,155,76,82,48,44,52,52,62,115,44,100,78,76,155,42];
 
   document.getElementById("thead").innerHTML="<tr>"+cols.map((h,i)=>
     `<th class="${aligns[i]?"":"L"}" style="width:${widths[i]}px">${h}</th>`).join("")+"</tr>";
 
   document.getElementById("tbody").innerHTML=sorted.map((c,i)=>{
-    const thin = isThinVol(c.vol);
+    const thin=isThin(c.vol);
     const mi=ma7I(c.ma7d);
-    const vi=vsI(c.vs, c.vol);
-    const si=sigI(c.ma7d, c.vs, c.score, c.vol, c.c24h);
-    const isManip = si.manip === true;
-    const mc_color=c.ma7d<0?"var(--blue)":c.ma7d<5?"var(--green)":c.ma7d<10?"var(--amber)":"var(--red)";
+    const mhri=mhrI(c.mhr,c.c24h,c.c7d);
+    const vi=vsI(c.vs,c.vol);
+    const si=sigI(c.ma7d,c.vs,c.score,c.vol,c.c24h,c.c7d,c.mhr);
+    const tr=trendI(c.trend);
+    const mc=c.ma7d<0?"var(--blue)":c.ma7d<5?"var(--green)":c.ma7d<10?"var(--amber)":"var(--red)";
     const sc_cls=c.score>=72&&!thin?"sh":c.score>=58&&!thin?"sm":c.score>=44?"sl":"sb";
-    const rb=isManip?"background:rgba(74,20,140,0.06)":i%2===0?"background:var(--bg0)":"background:var(--bg1)";
-    const volColor = thin ? "color:var(--amber);font-weight:500" : "";
-    return`<tr style="${rb}" ${isManip?'class="manip-row"':''}>
+    const rb=i%2===0?"var(--bg0)":"var(--bg1)";
+    const mhrVal=c.mhr!==null?c.mhr.toFixed(2):"—";
+    const mhrColor=c.mhr===null?"var(--tx2)":c.mhr<0.3?"var(--red)":c.mhr<0.8?"var(--amber)":"var(--green)";
+    return`<tr style="background:${rb}">
       <td style="color:var(--tx2);text-align:center">${i+1}</td>
       <td class="L"><div class="tc">
-        ${c.img?`<img src="${c.img}" width="15" height="15" style="border-radius:50%;flex-shrink:0" loading="lazy">`:""}
+        ${c.img?`<img src="${c.img}" width="14" height="14" style="border-radius:50%;flex-shrink:0" loading="lazy">`:""}
         <span class="tn">${c.name}</span>
-        <span class="ts">${c.sym}</span>
-        ${thin?`<span style="background:var(--amber-bg);color:var(--amber);font-size:9px;padding:0 4px;border-radius:3px;flex-shrink:0">tipis</span>`:""}
+        <span class="ts2">${c.sym}</span>
+        ${thin?`<span class="badge" style="background:var(--amber-bg);color:var(--amber);font-size:9px;padding:0 3px">tipis</span>`:""}
       </div></td>
       <td>${fmtMC(c.mcap)}</td>
-      <td style="${volColor}">${fmtVol(c.vol)}</td>
+      <td style="${thin?"color:var(--amber);font-weight:500":""}">${fmtVol(c.vol)}</td>
       <td>${(c.vmr*100).toFixed(1)}%</td>
       <td>${fmtPct(c.c1h)}</td>
       <td>${fmtPct(c.c24h)}</td>
       <td>${fmtPct(c.c7d)}</td>
-      <td style="color:${mc_color};font-weight:500">${c.ma7d.toFixed(1)}%</td>
+      <td style="color:${mc};font-weight:500">${c.ma7d.toFixed(1)}%</td>
       <td class="L">${badge(mi.l,mi.bg,mi.fg)}</td>
-      <td style="font-weight:500;${thin&&c.vs!==null&&c.vs>1.5?"color:var(--amber)":""}">${c.vs!==null?c.vs.toFixed(2)+"&times;":`<span style="color:var(--tx2)">...</span>`}</td>
+      <td style="color:${mhrColor};font-weight:500">${mhrVal}</td>
+      <td class="L"><span title="${mhri.tip||""}">${badge(mhri.l,mhri.bg,mhri.fg)}</span></td>
+      <td style="color:${tr.c};font-weight:500;text-align:center">${tr.l}</td>
+      <td style="font-weight:500">${c.vs!==null?c.vs.toFixed(2)+"&times;":`<span style="color:var(--tx2)">...</span>`}</td>
       <td class="L">${badge(si.l,si.bg,si.fg)}</td>
       <td style="text-align:center"><span class="${sc_cls}">${c.score.toFixed(0)}</span></td>
     </tr>`;
@@ -401,44 +430,38 @@ function renderTable(){
   renderStats();
 }
 
-async function fetchVolSpike(targets) {
-  const DELAY = BASE_URL.includes("pro-api") ? 320 : 2200;
+async function fetchVolSpike(targets){
+  const DELAY=BASE_URL.includes("pro-api")?320:2200;
   const newFailed=[];
-  let loaded=0, ok=0, fail=0;
+  let loaded=0,ok=0,fail=0;
   const t0=Date.now();
   document.getElementById("prog-wrap").style.display="block";
   document.getElementById("done-wrap").style.display="none";
   document.getElementById("retry-btn").style.display="none";
 
   for(let i=0;i<targets.length;i++){
-    if(abortFlag) break;
-    if(i>0) await sleep(DELAY);
-    if(abortFlag) break;
+    if(abortFlag)break;
+    if(i>0)await sleep(DELAY);
+    if(abortFlag)break;
     const t=targets[i];
-    let got=false;
-    try{
+    const tryFetch=async()=>{
       const chart=await apiFetch(`/coins/${t.id}/market_chart?vs_currency=usd&days=7&interval=daily`);
       const vols=(chart.total_volumes||[]).map(v=>v[1]);
       const past=vols.slice(-7,-1);
       const avg=past.length>0?past.reduce((a,b)=>a+b,0)/past.length:null;
-      const vs=(avg&&avg>0)?t.vol/avg:null;
+      return(avg&&avg>0)?t.vol/avg:null;
+    };
+    try{
+      const vs=await tryFetch();
       const idx=coins.findIndex(c=>c.id===t.id);
-      if(idx>=0) coins[idx].vs=vs;
-      got=true; ok++;
-    } catch(e){
+      if(idx>=0)coins[idx].vs=vs;
+      ok++;
+    }catch(e){
       if(e.message.includes("429")){
         await sleep(5000);
-        try{
-          const chart=await apiFetch(`/coins/${t.id}/market_chart?vs_currency=usd&days=7&interval=daily`);
-          const vols=(chart.total_volumes||[]).map(v=>v[1]);
-          const past=vols.slice(-7,-1);
-          const avg=past.length>0?past.reduce((a,b)=>a+b,0)/past.length:null;
-          const vs=(avg&&avg>0)?t.vol/avg:null;
-          const idx=coins.findIndex(c=>c.id===t.id);
-          if(idx>=0) coins[idx].vs=vs;
-          got=true; ok++;
-        } catch(e2){ fail++; newFailed.push(t); }
-      } else { fail++; newFailed.push(t); }
+        try{const vs=await tryFetch();const idx=coins.findIndex(c=>c.id===t.id);if(idx>=0)coins[idx].vs=vs;ok++;}
+        catch{fail++;newFailed.push(t);}
+      }else{fail++;newFailed.push(t);}
     }
     loaded++;
     const pct=Math.round(loaded/targets.length*100);
@@ -451,41 +474,41 @@ async function fetchVolSpike(targets) {
     document.getElementById("prog-fail").textContent=fail;
     document.getElementById("prog-pct").textContent=pct+"%";
     document.getElementById("prog-bar").style.width=pct+"%";
-    document.getElementById("eta").textContent=rem>0?"~"+etaS+" lagi":"selesai";
+    document.getElementById("eta").textContent=rem>0?"~"+etaS:" selesai";
     renderTable();
   }
 
   failedCoins=newFailed;
   document.getElementById("prog-wrap").style.display="none";
   document.getElementById("done-wrap").style.display="block";
-  document.getElementById("done-msg").textContent=ok+"/"+targets.length+" koin berhasil dimuat";
+  document.getElementById("done-msg").textContent=ok+"/"+targets.length+" Vol Spike berhasil dimuat";
   if(newFailed.length>0){
     document.getElementById("done-fail-row").style.display="block";
-    document.getElementById("done-fail-msg").textContent=newFailed.length+" koin gagal";
-    document.getElementById("retry-count").textContent=newFailed.length;
+    document.getElementById("done-fail-msg").textContent=newFailed.length+" gagal";
+    document.getElementById("retry-cnt").textContent=newFailed.length;
     document.getElementById("retry-btn").style.display="inline-block";
-  } else {
-    document.getElementById("done-fail-row").style.display="none";
-  }
+  }else{document.getElementById("done-fail-row").style.display="none";}
   renderTable();
 }
 
 async function loadData(){
-  abortFlag=false; failedCoins=[];
+  abortFlag=false;failedCoins=[];
   document.getElementById("err-box").style.display="none";
   document.getElementById("done-wrap").style.display="none";
   document.getElementById("prog-wrap").style.display="none";
   document.getElementById("retry-btn").style.display="none";
   document.getElementById("ts").textContent="Mengambil data...";
-  document.getElementById("tbody").innerHTML=
-    `<tr><td colspan="13" style="text-align:center;padding:24px;color:var(--tx1)">
-      <i class="ti ti-loader" style="font-size:20px;display:block;margin-bottom:6px"></i>
-      Menghubungkan ke CoinGecko API...</td></tr>`;
+  document.getElementById("tbody").innerHTML=`<tr><td colspan="16" style="text-align:center;padding:24px;color:var(--tx1)">Menghubungkan ke CoinGecko API...</td></tr>`;
+
+  prevSnap=loadSnapshot();
+  if(prevSnap){
+    const d=new Date(prevSnap.ts).toLocaleString("id-ID");
+    document.getElementById("prev-date").textContent=d;
+    document.getElementById("vol-trend-note").style.display="block";
+  }
+
   try{
-    const markets=await apiFetch(
-      "/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1"+
-      "&sparkline=true&price_change_percentage=1h%2C24h%2C7d"
-    );
+    const markets=await apiFetch("/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=true&price_change_percentage=1h%2C24h%2C7d");
     coins=markets.map((c,i)=>{
       const sp=c.sparkline_in_7d?.price||[];
       const ma7=calcMA7(sp);
@@ -495,42 +518,47 @@ async function loadData(){
       const c24h=(c.price_change_percentage_24h_in_currency||0)/100;
       const c7d=(c.price_change_percentage_7d_in_currency||0)/100;
       const vmr=c.market_cap>0?c.total_volume/c.market_cap:0;
+      const mhr=calcMHR(c24h,c7d);
+      const trend=getVMRTrend(c.id,vmr,prevSnap);
       return{rank:i+1,id:c.id,name:c.name,sym:c.symbol.toUpperCase(),
-        mcap:c.market_cap,vol:c.total_volume,vmr,c1h,c24h,c7d,ma7d,
+        mcap:c.market_cap,vol:c.total_volume,vmr,c1h,c24h,c7d,ma7d,mhr,trend,
         vs:null,score:calcScore(vmr,c24h,c7d,ma7d,c.total_volume,c1h),
         stable:STABLE.has(c.symbol.toLowerCase()),img:c.image};
     });
+
+    // Simpan snapshot setelah load
+    saveSnapshot(coins);
+
     document.getElementById("ts").textContent="CoinGecko API · "+new Date().toLocaleString("id-ID");
     renderTable();
     await fetchVolSpike(coins.filter(c=>!c.stable));
-  } catch(e){
-    const eb=document.getElementById("err-box");
-    eb.style.display="block";
-    eb.innerHTML=`<i class="ti ti-alert-circle" style="vertical-align:-1px"></i> Error: ${e.message}`;
+  }catch(e){
+    document.getElementById("err-box").style.display="block";
+    document.getElementById("err-box").innerHTML=`Error: ${e.message}`;
     document.getElementById("ts").textContent="Gagal terhubung";
   }
 }
 
 function exportCSV(){
-  const display=getDisplay();
-  const sorted=[...display].sort((a,b)=>b.score-a.score);
-  const hdr=["Rank","Nama","Ticker","MktCap","Vol24h","VolMC%","1h%","24h%","7d%","MA7Dist%","ZonaMA7","VolSpike","Sinyal","Skor","VolTipis"];
+  const d=getDisplay();
+  const sorted=[...d].sort((a,b)=>b.score-a.score);
+  const hdr=["Rank","Nama","Ticker","MktCap","Vol24h","VolMC%","1h%","24h%","7d%","MA7Dist%","ZonaMA7","MHR","Momentum","VolTrend","VolSpike","Sinyal","Skor","VolTipis"];
   const rows=sorted.map((c,i)=>{
-    const si=sigI(c.ma7d,c.vs,c.score,c.vol,c.c24h);
-    return [
-      i+1,`"${c.name}"`,c.sym,c.mcap,c.vol,
+    const mhri=mhrI(c.mhr,c.c24h,c.c7d);
+    const si=sigI(c.ma7d,c.vs,c.score,c.vol,c.c24h,c.c7d,c.mhr);
+    return[i+1,`"${c.name}"`,c.sym,c.mcap,c.vol,
       (c.vmr*100).toFixed(2),(c.c1h*100).toFixed(2),(c.c24h*100).toFixed(2),(c.c7d*100).toFixed(2),
       c.ma7d.toFixed(1),`"${ma7I(c.ma7d).l}"`,
+      c.mhr!==null?c.mhr.toFixed(2):"N/A",`"${mhri.l}"`,c.trend||"—",
       c.vs!==null?c.vs.toFixed(2):"N/A",
-      `"${si.l}"`,c.score.toFixed(0),
-      isThinVol(c.vol)?"Ya":"Tidak"
+      `"${si.l}"`,c.score.toFixed(0),isThin(c.vol)?"Ya":"Tidak"
     ].join(",");
   });
   const blob=new Blob([[hdr.join(","),...rows].join("\n")],{type:"text/csv"});
   const a=document.createElement("a");
   a.href=URL.createObjectURL(blob);
-  a.download="crypto_"+new Date().toISOString().slice(0,10)+".csv";
-  a.click(); URL.revokeObjectURL(a.href);
+  a.download="crypto_v4_"+new Date().toISOString().slice(0,10)+".csv";
+  a.click();URL.revokeObjectURL(a.href);
 }
 
 document.getElementById("start-btn").addEventListener("click",()=>{
@@ -540,11 +568,12 @@ document.getElementById("start-btn").addEventListener("click",()=>{
   const err=document.getElementById("setup-err");
   if(!key.startsWith("CG-")){err.style.display="block";err.textContent="API key harus diawali CG-";return;}
   err.style.display="none";
-  API_KEY=key; BASE_URL=plan==="pro"?"https://pro-api.coingecko.com/api/v3":"https://api.coingecko.com/api/v3";
-  if(save) localStorage.setItem("cg_key",key+"|"+plan);
+  API_KEY=key;
+  BASE_URL=plan==="pro"?"https://pro-api.coingecko.com/api/v3":"https://api.coingecko.com/api/v3";
+  if(save)localStorage.setItem("cg_key",key+"|"+plan);
   document.getElementById("setup").style.display="none";
   document.getElementById("main").style.display="block";
-  setupUI(); loadData();
+  setupUI();loadData();
 });
 document.getElementById("key-in").addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("start-btn").click();});
 
@@ -552,20 +581,20 @@ function setupUI(){
   document.getElementById("refresh-btn").addEventListener("click",()=>{abortFlag=true;setTimeout(loadData,150);});
   document.getElementById("export-btn").addEventListener("click",exportCSV);
   document.getElementById("logout-btn").addEventListener("click",()=>{
-    abortFlag=true; localStorage.removeItem("cg_key");
+    abortFlag=true;localStorage.removeItem("cg_key");
     document.getElementById("main").style.display="none";
     document.getElementById("setup").style.display="flex";
     document.getElementById("key-in").value="";
   });
   document.getElementById("retry-btn").addEventListener("click",async()=>{
     if(!failedCoins.length)return;
-    const toRetry=[...failedCoins]; failedCoins=[];
+    const toRetry=[...failedCoins];failedCoins=[];
     document.getElementById("retry-btn").style.display="none";
     await fetchVolSpike(toRetry);
   });
   document.getElementById("hide-stable").addEventListener("change",function(){hideStable=this.checked;renderTable();});
   document.getElementById("hide-thinvol").addEventListener("change",function(){hideThinVol=this.checked;renderTable();});
-  const sorts=[["score","Skor"],["rank","Rank"],["24h","24h %"],["ma7d","MA7 Dist"],["vs","Vol Spike"],["vol","Volume"]];
+  const sorts=[["score","Skor"],["rank","Rank"],["24h","24h%"],["mhr","MHR"],["trend","Vol Trend"],["ma7d","MA7 Dist"],["vs","Vol Spike"],["vol","Volume"]];
   document.getElementById("sort-btns").innerHTML=sorts.map(([k,l])=>
     `<button data-k="${k}" class="${k===sortKey?"active":""}">${l}</button>`).join("");
   document.getElementById("sort-btns").addEventListener("click",e=>{
@@ -578,7 +607,7 @@ function setupUI(){
 
 const saved=localStorage.getItem("cg_key");
 if(saved){
-  const [k,p]=saved.split("|");
+  const[k,p]=saved.split("|");
   document.getElementById("key-in").value=k;
   const r=document.querySelector(`input[name=plan][value="${p||"demo"}"]`);
   if(r)r.checked=true;
