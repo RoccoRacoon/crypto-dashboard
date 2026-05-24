@@ -67,6 +67,26 @@ tr:hover td{background:var(--bg2)}
 .tbl-wrap{overflow-x:auto;border-radius:var(--r);border:0.5px solid var(--bd0)}
 .foot{font-size:10px;color:var(--tx2);margin-top:8px;line-height:1.6}
 .lgd{background:var(--bg1);border-radius:var(--r);padding:6px 10px;margin-bottom:8px;font-size:11px;line-height:2}
+
+.btc-panel{border-radius:var(--rl);border:0.5px solid var(--bd0);padding:12px 16px;margin-bottom:12px;background:var(--bg0)}
+.btc-alert{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:var(--r);margin-bottom:10px;font-size:13px;font-weight:500}
+.btc-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:6px;margin-bottom:8px}
+.btc-m{background:var(--bg1);border-radius:var(--r);padding:7px 10px}
+.btc-ml{font-size:10px;color:var(--tx2);margin-bottom:2px}
+.btc-mv{font-size:14px;font-weight:500}
+.btc-breadth{margin-bottom:6px}
+.btc-bl{display:flex;justify-content:space-between;font-size:11px;color:var(--tx1);margin-bottom:3px}
+.btc-track{height:8px;background:var(--bg2);border-radius:4px;overflow:hidden;display:flex}
+.btc-green-bar{height:100%;background:#2e7d32;border-radius:4px 0 0 4px;transition:width .4s}
+.btc-red-bar{height:100%;background:#b71c1c}
+.btc-signals{display:flex;flex-wrap:wrap;gap:5px;font-size:11px}
+.btc-fg{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--tx1);margin-top:6px}
+.fg-bar{flex:1;height:6px;background:var(--bg2);border-radius:3px;overflow:hidden;position:relative}
+.fg-fill{height:100%;border-radius:3px;transition:width .4s}
+.sig-ok{background:var(--green-bg);color:var(--green);padding:2px 7px;border-radius:3px}
+.sig-warn{background:var(--amber-bg);color:var(--amber);padding:2px 7px;border-radius:3px}
+.sig-bad{background:var(--red-bg);color:var(--red);padding:2px 7px;border-radius:3px}
+.sig-info{background:var(--blue-bg);color:var(--blue);padding:2px 7px;border-radius:3px}
 </style>
 </head>
 <body>
@@ -98,6 +118,31 @@ tr:hover td{background:var(--bg2)}
 </div>
 
 <div id="main" class="page">
+  <div class="btc-panel" id="btc-panel" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div style="font-size:13px;font-weight:500">Kondisi Pasar &amp; BTC</div>
+      <div id="btc-ts" style="font-size:10px;color:var(--tx2)"></div>
+    </div>
+    <div class="btc-alert" id="btc-alert"></div>
+    <div class="btc-metrics" id="btc-metrics"></div>
+    <div class="btc-breadth">
+      <div class="btc-bl">
+        <span>Market Breadth (% koin hijau 24h)</span>
+        <span id="btc-breadth-pct" style="font-weight:500"></span>
+      </div>
+      <div class="btc-track">
+        <div class="btc-green-bar" id="btc-green-bar" style="width:0%"></div>
+        <div class="btc-red-bar" id="btc-red-bar" style="width:0%"></div>
+      </div>
+    </div>
+    <div class="btc-fg" id="btc-fg-row" style="display:none">
+      <span>Fear &amp; Greed</span>
+      <div class="fg-bar"><div class="fg-fill" id="fg-fill"></div></div>
+      <span id="fg-val" style="font-weight:500;min-width:80px;text-align:right"></span>
+    </div>
+    <div class="btc-signals" id="btc-signals"></div>
+  </div>
+
   <div class="card">
     <div class="hdr">
       <div>
@@ -145,7 +190,8 @@ tr:hover td{background:var(--bg2)}
       <span class="badge" style="background:var(--green-bg);color:var(--green)">BREAKOUT</span> MA7&lt;8% + Spike&gt;2× + Vol&gt;$1M
       <span class="badge" style="background:var(--red-bg);color:var(--red)">EXHAUSTION</span> MA7&gt;15% + Spike&gt;2× + Vol&gt;$1M
       <span class="badge" style="background:var(--purple-bg);color:var(--purple)">Potensi Manipulasi</span> Spike tinggi + Vol tipis + harga turun
-      <span class="badge" style="background:var(--amber-bg);color:var(--amber)">MHR Rendah</span> 7d%/24h% &lt; 0.3 → penalti −10 pts (kasus ICP/DOT)
+      <span class="badge" style="background:var(--amber-bg);color:var(--amber)">MHR Rendah</span> 7d%/24h% &lt; 0.3 → penalti −10 pts &nbsp;·&nbsp;
+      <span class="badge" style="background:var(--red-bg);color:var(--red)">Spike Tanpa Fondasi</span> MHR &lt; 0.8 + 24h% &gt; 5% → Skip (rule ICP/DOT)
     </div>
 
     <div class="ctrl">
@@ -171,7 +217,7 @@ tr:hover td{background:var(--bg2)}
     <div class="foot">
       MHR = Momentum Health Ratio (7d%÷24h%) — nilai tinggi = momentum sehat, rendah = spike sekarat ·
       Vol/MC Trend = perbandingan dengan sesi sebelumnya (localStorage) ·
-      Penalti skor: MHR&lt;0.3 → −10pts · Dead cat (7d negatif + 24h positif) → −15pts ·
+      Penalti skor: MHR&lt;0.3 → −10pts · Dead cat (7d− + 24h+) → −15pts · MHR&lt;0.8+24h&gt;5% → Spike Tanpa Fondasi (rule ICP/DOT) ·
       Sinyal kuadran hanya valid jika Vol 24h &gt; $1 Juta ·
       <strong>Bukan saran investasi.</strong>
     </div>
@@ -277,6 +323,8 @@ function sigI(ma7d,vs,sc,vol,c24h,c7d,mhr){
   if(thin&&vs!==null&&vs>1.5)        return{l:"Vol Tipis — Waspadai",bg:"var(--amber-bg)",fg:"var(--amber)"};
   if(mhr!==null&&mhr<0.3&&p24>3)    return{l:"Spike Sekarat",bg:"var(--red-bg)",fg:"var(--red)"};
   if(p7<0&&p24>2)                    return{l:"Dead Cat Bounce",bg:"var(--red-bg)",fg:"var(--red)"};
+  // ── Rule ICP/DOT: spike tanpa fondasi mingguan ──
+  if(mhr!==null&&mhr<0.8&&p24>5)    return{l:"Spike Tanpa Fondasi",bg:"var(--red-bg)",fg:"var(--red)"};
   if(vs!==null&&!thin){
     if(ma7d<8 &&vs>2)  return{l:"BREAKOUT — Beli",       bg:"var(--green-bg)",fg:"var(--green)"};
     if(ma7d>15&&vs>2)  return{l:"EXHAUSTION — Hindari",  bg:"var(--red-bg)",  fg:"var(--red)"};
@@ -531,12 +579,109 @@ async function loadData(){
 
     document.getElementById("ts").textContent="CoinGecko API · "+new Date().toLocaleString("id-ID");
     renderTable();
+    renderBTCPanel(coins);
     await fetchVolSpike(coins.filter(c=>!c.stable));
   }catch(e){
     document.getElementById("err-box").style.display="block";
     document.getElementById("err-box").innerHTML=`Error: ${e.message}`;
     document.getElementById("ts").textContent="Gagal terhubung";
   }
+}
+
+
+async function fetchFearGreed(){
+  try{
+    const r=await fetch('https://api.alternative.me/fng/?limit=1');
+    const d=await r.json();
+    return{value:parseInt(d.data[0].value),label:d.data[0].value_classification};
+  }catch{return null;}
+}
+
+function getBTCLevel(btc,breadth){
+  const p24=btc.c24h*100,p7=btc.c7d*100,p1=btc.c1h*100;
+  const mhr=btc.mhr,vs=btc.vs,ma7=btc.ma7d;
+  // Level SIAGA DUMP (merah)
+  if(p24<-4&&vs&&vs>1.5)return"danger";
+  if(mhr!==null&&mhr<0.3&&p24>5)return"danger";
+  if(breadth<30)return"danger";
+  if(p24<-6)return"danger";
+  // Level WASPADA (kuning)
+  if(p24<-2)return"warning";
+  if(mhr!==null&&mhr<0.5&&p24>3)return"warning";
+  if(breadth<42)return"warning";
+  if(ma7>18)return"warning";
+  if(p1<-1.5)return"warning";
+  if(vs&&vs>2&&p24<0)return"warning";
+  return"ok";
+}
+
+function renderBTCPanel(allCoins){
+  const btc=allCoins.find(c=>c.id==="bitcoin"||c.sym==="BTC");
+  if(!btc)return;
+  document.getElementById("btc-panel").style.display="block";
+  document.getElementById("btc-ts").textContent="Update: "+new Date().toLocaleTimeString("id-ID");
+
+  const nonStable=allCoins.filter(c=>!c.stable&&c.vol>0);
+  const green=nonStable.filter(c=>c.c24h>0).length;
+  const breadth=nonStable.length?Math.round(green/nonStable.length*100):50;
+  const level=getBTCLevel(btc,breadth);
+
+  const alertCfg={
+    danger:{bg:"var(--red-bg)",fg:"var(--red)",icon:"ti-alert-triangle",txt:"SIAGA DUMP — Kondisi BTC & Market Berbahaya"},
+    warning:{bg:"var(--amber-bg)",fg:"var(--amber)",icon:"ti-alert-circle",txt:"WASPADA — Monitor Ketat. Hindari Entry Baru"},
+    ok:{bg:"var(--green-bg)",fg:"var(--green)",icon:"ti-circle-check",txt:"Kondisi Pasar Normal — Cek Sinyal Individual"},
+  };
+  const a=alertCfg[level];
+  document.getElementById("btc-alert").style.cssText=`background:${a.bg};color:${a.fg}`;
+  document.getElementById("btc-alert").innerHTML=`<i class="ti ${a.icon}" style="font-size:18px"></i><span>${a.txt}</span>`;
+
+  const p24=btc.c24h*100,p7=btc.c7d*100,p1=btc.c1h*100;
+  const mhr=btc.mhr,ma7=btc.ma7d,vs=btc.vs;
+  const mhrColor=mhr===null?"var(--tx2)":mhr<0.3?"var(--red)":mhr<0.8?"var(--amber)":"var(--green)";
+  const ma7Color=ma7<0?"var(--blue)":ma7<5?"var(--green)":ma7<10?"var(--amber)":ma7<18?"var(--red)":"var(--red)";
+  const clr=v=>v>=0?"var(--green-mid)":"var(--red)";
+  const fmt=v=>(v>=0?"+":"")+v.toFixed(2)+"%";
+  document.getElementById("btc-metrics").innerHTML=[
+    {l:"1h%",v:fmt(p1),c:clr(p1)},
+    {l:"24h%",v:fmt(p24),c:clr(p24)},
+    {l:"7d%",v:fmt(p7),c:clr(p7)},
+    {l:"MHR",v:mhr!==null?mhr.toFixed(2):"—",c:mhrColor},
+    {l:"MA7 Dist",v:ma7.toFixed(1)+"%",c:ma7Color},
+    {l:"VolSpike",v:vs!==null?vs.toFixed(2)+"×":"…",c:"var(--tx0)"},
+    {l:"Market Breadth",v:breadth+"%",c:breadth<30?"var(--red)":breadth<45?"var(--amber)":"var(--green)"},
+  ].map(m=>`<div class="btc-m"><div class="btc-ml">${m.l}</div><div class="btc-mv" style="color:${m.c}">${m.v}</div></div>`).join("");
+
+  document.getElementById("btc-breadth-pct").style.color=breadth<30?"var(--red)":breadth<45?"var(--amber)":"var(--green)";
+  document.getElementById("btc-breadth-pct").textContent=green+"/"+nonStable.length+" koin hijau ("+breadth+"%)";
+  document.getElementById("btc-green-bar").style.width=breadth+"%";
+  document.getElementById("btc-red-bar").style.width=(100-breadth)+"%";
+
+  const sigs=[];
+  if(p1<-1.5)sigs.push({t:"BTC -"+Math.abs(p1).toFixed(1)+"% per jam",c:"bad"});
+  if(p24<-4&&vs&&vs>1.5)sigs.push({t:"Volume dump ("+vs.toFixed(1)+"× + turun)",c:"bad"});
+  if(mhr!==null&&mhr<0.3&&p24>3)sigs.push({t:"Spike Sekarat MHR "+mhr.toFixed(2),c:"bad"});
+  if(p7<-10)sigs.push({t:"Downtrend mingguan "+fmt(p7),c:"bad"});
+  if(ma7>18)sigs.push({t:"BTC Overextended MA7 "+ma7.toFixed(0)+"%",c:"warn"});
+  if(p24<-2&&p24>=-4)sigs.push({t:"BTC koreksi "+fmt(p24),c:"warn"});
+  if(breadth<30)sigs.push({t:"Hanya "+breadth+"% koin hijau",c:"bad"});
+  else if(breadth<42)sigs.push({t:breadth+"% koin hijau — waspada",c:"warn"});
+  if(p24>3&&mhr&&mhr>0.8)sigs.push({t:"BTC momentum sehat MHR "+mhr.toFixed(2),c:"ok"});
+  if(breadth>60)sigs.push({t:breadth+"% koin hijau — bullish",c:"ok"});
+  if(!sigs.length)sigs.push({t:"Tidak ada sinyal kritis",c:"info"});
+  document.getElementById("btc-signals").innerHTML=sigs.map(s=>`<span class="sig-${s.c}">${s.t}</span>`).join("");
+
+  fetchFearGreed().then(fg=>{
+    if(!fg)return;
+    const row=document.getElementById("btc-fg-row");
+    row.style.display="flex";
+    const fill=document.getElementById("fg-fill");
+    const v=fg.value;
+    const fgColor=v<25?"#b71c1c":v<45?"#e65100":v<55?"#888":v<75?"#1b5e20":"#0d47a1";
+    fill.style.background=fgColor;
+    fill.style.width=v+"%";
+    document.getElementById("fg-val").style.color=fgColor;
+    document.getElementById("fg-val").textContent=v+" — "+fg.label;
+  });
 }
 
 function exportCSV(){
