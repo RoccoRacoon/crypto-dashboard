@@ -87,6 +87,9 @@ tr:hover td{background:var(--bg2)}
 .sig-warn{background:var(--amber-bg);color:var(--amber);padding:2px 7px;border-radius:3px}
 .sig-bad{background:var(--red-bg);color:var(--red);padding:2px 7px;border-radius:3px}
 .sig-info{background:var(--blue-bg);color:var(--blue);padding:2px 7px;border-radius:3px}
+.wash-row td{background:rgba(74,20,140,0.08)!important}
+.micro-row td{background:rgba(180,30,30,0.05)!important}
+.cap-badge{font-size:9px;padding:0 4px;border-radius:3px;font-weight:500;flex-shrink:0}
 </style>
 </head>
 <body>
@@ -190,8 +193,9 @@ tr:hover td{background:var(--bg2)}
       <span class="badge" style="background:var(--green-bg);color:var(--green)">BREAKOUT</span> MA7&lt;8% + Spike&gt;2× + Vol&gt;$1M
       <span class="badge" style="background:var(--red-bg);color:var(--red)">EXHAUSTION</span> MA7&gt;15% + Spike&gt;2× + Vol&gt;$1M
       <span class="badge" style="background:var(--purple-bg);color:var(--purple)">Potensi Manipulasi</span> Spike tinggi + Vol tipis + harga turun
-      <span class="badge" style="background:var(--amber-bg);color:var(--amber)">MHR Rendah</span> 7d%/24h% &lt; 0.3 → penalti −10 pts &nbsp;·&nbsp;
-      <span class="badge" style="background:var(--red-bg);color:var(--red)">Spike Tanpa Fondasi</span> MHR &lt; 0.8 + 24h% &gt; 5% → Skip (rule ICP/DOT)
+      <span class="badge" style="background:var(--purple-bg);color:var(--purple)">Wash Trading ⛔</span> Vol &gt; 2× Market Cap — hampir pasti manipulasi &nbsp;·&nbsp;
+      <span class="badge" style="background:var(--red-bg);color:var(--red)">Spike Tanpa Fondasi</span> MHR &lt; 0.8 + 24h% &gt; 5% (rule ICP/DOT) &nbsp;·&nbsp;
+      <span class="badge" style="background:var(--amber-bg);color:var(--amber)">Mikro ⚠ / Nano ⛔</span> Market cap &lt; $200M — risiko tinggi, likuiditas rendah
     </div>
 
     <div class="ctrl">
@@ -215,9 +219,10 @@ tr:hover td{background:var(--bg2)}
     </div>
 
     <div class="foot">
-      MHR = Momentum Health Ratio (7d%÷24h%) — nilai tinggi = momentum sehat, rendah = spike sekarat ·
+      ⚠️ Data diurutkan berdasarkan Volume 24h (bukan Market Cap) — token kecil dengan volume artifisial bisa muncul di atas. Selalu cek Cap Tier & Wash Trading alert. ·
+      MHR = Momentum Health Ratio (7d%÷24h%) ·
       Vol/MC Trend = perbandingan dengan sesi sebelumnya (localStorage) ·
-      Penalti skor: MHR&lt;0.3 → −10pts · Dead cat (7d− + 24h+) → −15pts · MHR&lt;0.8+24h&gt;5% → Spike Tanpa Fondasi (rule ICP/DOT) ·
+      Penalti skor: MHR&lt;0.3 → −10pts · Dead cat (7d negatif + 24h positif) → −15pts ·
       Sinyal kuadran hanya valid jika Vol 24h &gt; $1 Juta ·
       <strong>Bukan saran investasi.</strong>
     </div>
@@ -269,10 +274,45 @@ function calcScore(vmr,c24h,c7d,ma7d,vol,c1h){
   const mhrPenalty=mhr!==null&&mhr<0.3?-10:0;
   // Penalti dead cat: 7d negatif tapi 24h spike besar
   const deadCat=(p7<0&&p24>2)?-15:0;
+  // Penalti wash trading: Vol > 2× MC = kemungkinan besar manipulasi
+  const washPen = (arguments[1]!==undefined && arguments[3]!==undefined) ? 0 : 0; // placeholder
   return Math.min(100,Math.max(0,a+b+c+d+bonus+ma7adj+mhrPenalty+deadCat));
 }
 
+// calcScore versi extended dengan mcap
+function calcScoreEx(vmr,c24h,c7d,ma7d,vol,c1h,mcap){
+  const p24=c24h*100, p7=c7d*100;
+  const a=p24<0?0:p24<=2?p24/2*18:p24<=15?35:p24<=30?20:8;
+  const b=p7<0?0:p7<=5?p7/5*12:p7<=20?25:p7<=40?15:5;
+  const c=Math.min(25,vmr/0.08*25);
+  const d=vol>=1e9?15:vol>=1e8?10:vol>=1e7?6:vol>=1e6?3:0;
+  const bonus=(c1h>0&&c24h>0.005&&c7d>0.02)?5:0;
+  const ma7adj=ma7d>18?-15:(ma7d<5&&c24h>0)?5:0;
+  const mhr=calcMHR(c24h,c7d);
+  const mhrPenalty=mhr!==null&&mhr<0.3?-10:0;
+  const deadCat=(p7<0&&p24>2)?-15:0;
+  // Penalti wash trading: Vol > 2× Market Cap
+  const washPenalty=isWash(vol,mcap)?-30:0;
+  // Penalti extreme VMR pada small/micro cap
+  const extremePenalty=isExtremeVMR(vmr,mcap)?-15:0;
+  return Math.min(100,Math.max(0,a+b+c+d+bonus+ma7adj+mhrPenalty+deadCat+washPenalty+extremePenalty));
+}
+
 function isThin(vol){return vol<MIN_VOL;}
+
+// ── GUARDRAIL KHUSUS order=volume_desc (150 token) ──
+// Wash Trading: Vol 24h > 2× Market Cap = tidak wajar secara fundamental
+function isWash(vol,mcap){return mcap>0 && vol>mcap*2;}
+// Extreme VMR: Vol/MC > 30% pada token kecil (<$500M) = sangat mencurigakan
+function isExtremeVMR(vmr,mcap){return vmr>0.30 && mcap<500_000_000;}
+// Cap tier untuk label visual
+function capTier(mcap){
+  if(mcap>=10e9)  return null;                                          // Large — aman
+  if(mcap>=1e9)   return{l:"Mid",bg:"var(--blue-bg)",fg:"var(--blue)"}; // $1B-10B
+  if(mcap>=200e6) return{l:"Small",bg:"var(--amber-bg)",fg:"var(--amber)"}; // $200M-1B
+  if(mcap>=50e6)  return{l:"Mikro ⚠",bg:"var(--red-bg)",fg:"var(--red)"}; // $50M-200M
+  return               {l:"Nano ⛔",bg:"var(--purple-bg)",fg:"var(--purple)"}; // <$50M
+}
 
 function ma7I(d){
   if(d<0)  return{l:"Di bawah MA7",   bg:"var(--blue-bg)", fg:"var(--blue)"};
@@ -316,15 +356,26 @@ function trendI(trend){
   return{l:trend,c:"var(--tx2)"};
 }
 
-function sigI(ma7d,vs,sc,vol,c24h,c7d,mhr){
+function sigI(ma7d,vs,sc,vol,c24h,c7d,mhr,mcap){
   const thin=isThin(vol);
   const p7=c7d*100,p24=c24h*100;
+  // ── LEVEL 1: Deteksi manipulasi paling kuat ──
+  // Wash trading: Vol > 2× Market Cap = tidak bisa terjadi secara organik
+  if(isWash(vol,mcap))               return{l:"Wash Trading ⛔",bg:"var(--purple-bg)",fg:"var(--purple)"};
+  // Spike tinggi + volume nano/mikro cap + harga turun = classic pump trap
+  if(vs!==null&&vs>3&&mcap<100e6&&c24h<=0) return{l:"Pump Trap ⛔",bg:"var(--purple-bg)",fg:"var(--purple)"};
+  // Extreme VMR pada small cap = sangat mencurigakan
+  if(isExtremeVMR(vol/mcap,mcap)&&vs!==null&&vs>2&&c24h<=0)
+                                     return{l:"VMR Ekstrem — Manipulasi?",bg:"var(--purple-bg)",fg:"var(--purple)"};
+  // ── LEVEL 2: Sinyal bahaya teknikal ──
   if(vs!==null&&vs>2&&thin&&c24h<=0) return{l:"Potensi Manipulasi!",bg:"var(--purple-bg)",fg:"var(--purple)"};
   if(thin&&vs!==null&&vs>1.5)        return{l:"Vol Tipis — Waspadai",bg:"var(--amber-bg)",fg:"var(--amber)"};
+  // ── RULE ICP/DOT: spike tanpa fondasi mingguan ──
+  if(mhr!==null&&mhr<0.8&&p24>5)    return{l:"Spike Tanpa Fondasi",bg:"var(--red-bg)",fg:"var(--red)"};
   if(mhr!==null&&mhr<0.3&&p24>3)    return{l:"Spike Sekarat",bg:"var(--red-bg)",fg:"var(--red)"};
   if(p7<0&&p24>2)                    return{l:"Dead Cat Bounce",bg:"var(--red-bg)",fg:"var(--red)"};
-  // ── Rule ICP/DOT: spike tanpa fondasi mingguan ──
-  if(mhr!==null&&mhr<0.8&&p24>5)    return{l:"Spike Tanpa Fondasi",bg:"var(--red-bg)",fg:"var(--red)"};
+  // ── Tambahan: micro/nano cap tanpa vol spike = berisiko tinggi ──
+  if(mcap<100e6&&vs===null)          return{l:"Mikro-cap — Tunggu Data",bg:"var(--amber-bg)",fg:"var(--amber)"};
   if(vs!==null&&!thin){
     if(ma7d<8 &&vs>2)  return{l:"BREAKOUT — Beli",       bg:"var(--green-bg)",fg:"var(--green)"};
     if(ma7d>15&&vs>2)  return{l:"EXHAUSTION — Hindari",  bg:"var(--red-bg)",  fg:"var(--red)"};
@@ -391,13 +442,18 @@ function renderStats(){
   const sek=d.filter(c=>c.mhr!==null&&c.mhr<0.3&&c.c24h*100>3).length;
   const fresh=d.filter(c=>c.ma7d>=0&&c.ma7d<5).length;
   const hi=d.filter(c=>c.score>=72&&!isThin(c.vol)).length;
+  const wash=d.filter(c=>isWash(c.vol,c.mcap)).length;
+  const micro=d.filter(c=>c.mcap>0&&c.mcap<200e6).length;
+  const tanpa=d.filter(c=>c.mhr!==null&&c.mhr<0.8&&c.c24h*100>5).length;
   const items=[
-    {l:"Koin",v:d.length,s:"dari top 100"},
+    {l:"Koin",v:d.length,s:"top 150 by volume"},
     {l:"Breakout",v:brk,s:"MA7 fresh + spike valid"},
     {l:"Zona Fresh",v:fresh,s:"MA7 distance < 5%"},
     {l:"Skor ≥72",v:hi,s:"vol > $1M"},
-    {l:"Spike Sekarat",v:sek,s:"MHR < 0.3",warn:sek>0},
-    {l:"Potensi Manip",v:manip,s:"spike + vol tipis + turun",warn:manip>0},
+    {l:"Wash Trading ⛔",v:wash,s:"Vol > 2× Market Cap",warn:wash>0},
+    {l:"Spike Tanpa Fondasi",v:tanpa,s:"MHR<0.8 + 24h>5%",warn:tanpa>0},
+    {l:"Potensi Manip",v:manip,s:"spike tipis + turun",warn:manip>0},
+    {l:"Mikro-cap (<$200M)",v:micro,s:"extra due diligence",warn:micro>3},
     {l:"Vol Spike",v:loaded+"/"+d.length,s:"dimuat"},
   ];
   document.getElementById("stats").innerHTML=items.map(s=>
@@ -444,20 +500,23 @@ function renderTable(){
     const mi=ma7I(c.ma7d);
     const mhri=mhrI(c.mhr,c.c24h,c.c7d);
     const vi=vsI(c.vs,c.vol);
-    const si=sigI(c.ma7d,c.vs,c.score,c.vol,c.c24h,c.c7d,c.mhr);
+    const si=sigI(c.ma7d,c.vs,c.score,c.vol,c.c24h,c.c7d,c.mhr,c.mcap);
     const tr=trendI(c.trend);
     const mc=c.ma7d<0?"var(--blue)":c.ma7d<5?"var(--green)":c.ma7d<10?"var(--amber)":"var(--red)";
     const sc_cls=c.score>=72&&!thin?"sh":c.score>=58&&!thin?"sm":c.score>=44?"sl":"sb";
     const rb=i%2===0?"var(--bg0)":"var(--bg1)";
+    const rowClass=isWash(c.vol,c.mcap)?"wash-row":capTier(c.mcap)&&c.mcap<50e6?"micro-row":"";
     const mhrVal=c.mhr!==null?c.mhr.toFixed(2):"—";
     const mhrColor=c.mhr===null?"var(--tx2)":c.mhr<0.3?"var(--red)":c.mhr<0.8?"var(--amber)":"var(--green)";
-    return`<tr style="background:${rb}">
+    return`<tr style="background:${rb}" class="${rowClass}">
       <td style="color:var(--tx2);text-align:center">${i+1}</td>
       <td class="L"><div class="tc">
         ${c.img?`<img src="${c.img}" width="14" height="14" style="border-radius:50%;flex-shrink:0" loading="lazy">`:""}
         <span class="tn">${c.name}</span>
         <span class="ts2">${c.sym}</span>
         ${thin?`<span class="badge" style="background:var(--amber-bg);color:var(--amber);font-size:9px;padding:0 3px">tipis</span>`:""}
+        ${(()=>{const ct=capTier(c.mcap);return ct?`<span class="cap-badge" style="background:${ct.bg};color:${ct.fg}">${ct.l}</span>`:""})()}
+        ${isWash(c.vol,c.mcap)?`<span class="cap-badge" style="background:var(--purple-bg);color:var(--purple)">WASH⛔</span>`:""}
       </div></td>
       <td>${fmtMC(c.mcap)}</td>
       <td style="${thin?"color:var(--amber);font-weight:500":""}">${fmtVol(c.vol)}</td>
@@ -556,7 +615,7 @@ async function loadData(){
   }
 
   try{
-    const markets=await apiFetch("/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=true&price_change_percentage=1h%2C24h%2C7d");
+    const markets=await apiFetch("/coins/markets?vs_currency=usd&order=volume_desc&per_page=150&page=1&sparkline=true&price_change_percentage=1h%2C24h%2C7d");
     coins=markets.map((c,i)=>{
       const sp=c.sparkline_in_7d?.price||[];
       const ma7=calcMA7(sp);
@@ -570,7 +629,7 @@ async function loadData(){
       const trend=getVMRTrend(c.id,vmr,prevSnap);
       return{rank:i+1,id:c.id,name:c.name,sym:c.symbol.toUpperCase(),
         mcap:c.market_cap,vol:c.total_volume,vmr,c1h,c24h,c7d,ma7d,mhr,trend,
-        vs:null,score:calcScore(vmr,c24h,c7d,ma7d,c.total_volume,c1h),
+        vs:null,score:calcScoreEx(vmr,c24h,c7d,ma7d,c.total_volume,c1h,c.market_cap),
         stable:STABLE.has(c.symbol.toLowerCase()),img:c.image};
     });
 
@@ -687,7 +746,7 @@ function renderBTCPanel(allCoins){
 function exportCSV(){
   const d=getDisplay();
   const sorted=[...d].sort((a,b)=>b.score-a.score);
-  const hdr=["Rank","Nama","Ticker","MktCap","Vol24h","VolMC%","1h%","24h%","7d%","MA7Dist%","ZonaMA7","MHR","Momentum","VolTrend","VolSpike","Sinyal","Skor","VolTipis"];
+  const hdr=["Rank","Nama","Ticker","MktCap","Vol24h","VolMC%","1h%","24h%","7d%","MA7Dist%","ZonaMA7","MHR","Momentum","VolTrend","VolSpike","Sinyal","Skor","VolTipis","WashTrading","CapTier"];
   const rows=sorted.map((c,i)=>{
     const mhri=mhrI(c.mhr,c.c24h,c.c7d);
     const si=sigI(c.ma7d,c.vs,c.score,c.vol,c.c24h,c.c7d,c.mhr);
@@ -696,7 +755,9 @@ function exportCSV(){
       c.ma7d.toFixed(1),`"${ma7I(c.ma7d).l}"`,
       c.mhr!==null?c.mhr.toFixed(2):"N/A",`"${mhri.l}"`,c.trend||"—",
       c.vs!==null?c.vs.toFixed(2):"N/A",
-      `"${si.l}"`,c.score.toFixed(0),isThin(c.vol)?"Ya":"Tidak"
+      `"${si.l}"`,c.score.toFixed(0),isThin(c.vol)?"Ya":"Tidak",
+      isWash(c.vol,c.mcap)?"YA — HATI-HATI":"Tidak",
+      (()=>{const ct=capTier(c.mcap);return ct?ct.l:"Large"})()
     ].join(",");
   });
   const blob=new Blob([[hdr.join(","),...rows].join("\n")],{type:"text/csv"});
