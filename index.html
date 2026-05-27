@@ -314,6 +314,8 @@ function calcScore(vmr,c24h,c7d,ma7d,vol,c1h){
 
 // calcScore versi extended dengan mcap
 function calcScoreEx(vmr,c24h,c7d,ma7d,vol,c1h,mcap){
+  // Defensive: semua input default 0 jika undefined/null
+  vmr=vmr||0;c24h=c24h||0;c7d=c7d||0;ma7d=ma7d||0;vol=vol||0;c1h=c1h||0;mcap=mcap||0;
   const p24=c24h*100, p7=c7d*100;
   const a=p24<0?0:p24<=2?p24/2*18:p24<=15?35:p24<=30?20:8;
   const b=p7<0?0:p7<=5?p7/5*12:p7<=20?25:p7<=40?15:5;
@@ -534,13 +536,13 @@ function renderTable(){
     const mhri=mhrI(c.mhr,c.c24h,c.c7d);
     const vi=vsI(c.vs,c.vol);
     const si=sigI(c.ma7d,c.vs,c.score,c.vol,c.c24h,c.c7d,c.mhr,c.mcap);
-    const tr=trendI(c.trend);
+    const tr=trendI(c.trend||null);
     const mc=c.ma7d<0?"var(--blue)":c.ma7d<5?"var(--green)":c.ma7d<10?"var(--amber)":"var(--red)";
     const sc_cls=c.score>=72&&!thin?"sh":c.score>=58&&!thin?"sm":c.score>=44?"sl":"sb";
     const rb=i%2===0?"var(--bg0)":"var(--bg1)";
     const rowClass=isWash(c.vol,c.mcap)?"wash-row":capTier(c.mcap)&&c.mcap<50e6?"micro-row":"";
-    const mhrVal=c.mhr!==null?c.mhr.toFixed(2):"—";
-    const mhrColor=c.mhr===null?"var(--tx2)":c.mhr<0.3?"var(--red)":c.mhr<0.8?"var(--amber)":"var(--green)";
+    const mhrVal=(c.mhr!=null&&c.mhr!==undefined)?(c.mhr??0).toFixed(2):"—";
+    const mhrColor=(c.mhr==null||c.mhr===undefined)?"var(--tx2)":c.mhr<0.3?"var(--red)":c.mhr<0.8?"var(--amber)":"var(--green)";
     return`<tr style="background:${rb}" class="${rowClass}">
       <td style="color:var(--tx2);text-align:center">${i+1}</td>
       <td class="L"><div class="tc">
@@ -558,14 +560,14 @@ function renderTable(){
       <td>${fmtPct(c.c1h)}</td>
       <td>${fmtPct(c.c24h)}</td>
       <td>${fmtPct(c.c7d)}</td>
-      <td style="color:${mc};font-weight:500">${c.ma7d.toFixed(1)}%</td>
+      <td style="color:${mc};font-weight:500">${(c.ma7d??0).toFixed(1)}%</td>
       <td class="L">${badge(mi.l,mi.bg,mi.fg)}</td>
       <td style="color:${mhrColor};font-weight:500">${mhrVal}</td>
       <td class="L"><span title="${mhri.tip||""}">${badge(mhri.l,mhri.bg,mhri.fg)}</span></td>
       <td style="color:${tr.c};font-weight:500;text-align:center">${tr.l}</td>
-      <td style="font-weight:500">${c.vs!==null?c.vs.toFixed(2)+"&times;":`<span style="color:var(--tx2)">...</span>`}</td>
+      <td style="font-weight:500">${c.vs!==null?(c.vs??0).toFixed(2)+"&times;":`<span style="color:var(--tx2)">...</span>`}</td>
       <td class="L">${badge(si.l,si.bg,si.fg)}</td>
-      <td style="text-align:center"><span class="${sc_cls}">${c.score.toFixed(0)}</span></td>
+      <td style="text-align:center"><span class="${sc_cls}">${(c.score??0).toFixed(0)}</span></td>
     </tr>`;
   }).join("");
   renderStats();
@@ -689,8 +691,11 @@ async function loadData(){
           const c24h=(c.price_change_percentage_24h_in_currency||0)/100;
           const c7d=(c.price_change_percentage_7d_in_currency||0)/100;
           const vmr=c.market_cap>0?c.total_volume/c.market_cap:0;
+          const mhr_wl=calcMHR(c24h,c7d);
+          const trend_wl=getVMRTrend(c.id,vmr,prevSnap);
           coins.push({rank:200+i+1,id:c.id,name:c.name,sym:c.symbol.toUpperCase(),
             mcap:c.market_cap,vol:c.total_volume,vmr,c1h,c24h,c7d,ma7d,
+            mhr:mhr_wl,trend:trend_wl,
             vs:null,score:calcScoreEx(vmr,c24h,c7d,ma7d,c.total_volume,c1h,c.market_cap),
             sector:getSector(c.id),stable:STABLE.has(c.symbol.toLowerCase()),
             img:c.image,watchlist:true});
@@ -813,10 +818,10 @@ function exportCSV(){
     const si=sigI(c.ma7d,c.vs,c.score,c.vol,c.c24h,c.c7d,c.mhr);
     return[i+1,`"${c.name}"`,c.sym,c.mcap,c.vol,
       (c.vmr*100).toFixed(2),(c.c1h*100).toFixed(2),(c.c24h*100).toFixed(2),(c.c7d*100).toFixed(2),
-      c.ma7d.toFixed(1),`"${ma7I(c.ma7d).l}"`,
-      c.mhr!==null?c.mhr.toFixed(2):"N/A",`"${mhri.l}"`,c.trend||"—",
-      c.vs!==null?c.vs.toFixed(2):"N/A",
-      `"${si.l}"`,c.score.toFixed(0),isThin(c.vol)?"Ya":"Tidak",
+      (c.ma7d??0).toFixed(1),`"${ma7I(c.ma7d).l}"`,
+      c.mhr!==null?(c.mhr??0).toFixed(2):"N/A",`"${mhri.l}"`,c.trend||"—",
+      c.vs!==null?(c.vs??0).toFixed(2):"N/A",
+      `"${si.l}"`,(c.score??0).toFixed(0),isThin(c.vol)?"Ya":"Tidak",
       isWash(c.vol,c.mcap)?"YA — HATI-HATI":"Tidak",
       (()=>{const ct=capTier(c.mcap);return ct?ct.l:"Large"})()
     ].join(",");
