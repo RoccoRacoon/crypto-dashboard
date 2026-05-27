@@ -230,6 +230,39 @@ tr:hover td{background:var(--bg2)}
 </div>
 
 <script>
+// ── SEKTOR MAPPING (sinkron Python) ─────────────────────────
+const SECTORS={
+  "bitcoin":"L1/SoV","ethereum":"L1","solana":"L1","cardano":"L1",
+  "avalanche-2":"L1","cosmos":"L0","tron":"L1","hedera-hashgraph":"L1",
+  "algorand":"L1","internet-computer":"L1","near":"L1","toncoin":"L1",
+  "injective-protocol":"L1/DeFi","sei-network":"L1","sui":"L1","aptos":"L1",
+  "arbitrum":"L2","optimism":"L2","matic-network":"L2","celestia":"L2/DA",
+  "the-graph":"AI/Data","fetch-ai":"AI/Agent","ocean-protocol":"AI/Data",
+  "singularitynet":"AI/Agent","bittensor":"AI","render-token":"DePIN/AI",
+  "akash-network":"DePIN/AI","helium":"DePIN","numeraire":"AI/Data",
+  "uniswap":"DeFi","aave":"DeFi","compound-governance-token":"DeFi",
+  "curve-dao-token":"DeFi","gmx":"DeFi","jupiter-exchange-solana":"DeFi",
+  "morpho":"DeFi","ethena":"DeFi","ondo-finance":"RWA","ondo":"RWA",
+  "chainlink":"Oracle","band-protocol":"Oracle",
+  "binancecoin":"Exchange","okb":"Exchange","bitget-token":"Exchange",
+  "kucoin-shares":"Exchange","gate-token":"Exchange","leo-token":"Exchange",
+  "hyperliquid":"Exchange","whitebit":"Exchange",
+  "dogecoin":"Meme","shiba-inu":"Meme","pepe":"Meme","bonk":"Meme",
+  "zcash":"Privacy/SoV","monero":"Privacy","dash":"Privacy/SoV",
+  "litecoin":"L1/SoV","bitcoin-cash":"L1/SoV",
+  "axie-infinity":"Gaming","immutable-x":"Gaming","pudgy-penguins":"NFT",
+};
+function getSector(id){return SECTORS[id]||"Lainnya";}
+
+// ── WATCHLIST — selalu diambil meski di luar top 200 ─────────
+const WATCHLIST_IDS=[
+  "the-graph","fetch-ai","ocean-protocol","singularitynet",
+  "akash-network","helium","numeraire",
+  "gmx","jupiter-exchange-solana","curve-dao-token",
+  "sei-network","celestia","injective-protocol",
+  "axie-infinity","immutable-x",
+];
+
 const STABLE=new Set(["usdt","usdc","dai","tusd","busd","usdp","usdn","usdd","frax","lusd","gusd","crvusd","usde","pyusd","usds","usd1","rlusd","usdg","usdf","usdtb","bfusd","gho","usd0","usyc","buidl","usdy","jtrsy","ustb","eutbl","ousg","fdusd","eurs","eurc","aeur"]);
 const MIN_VOL=1_000_000;
 
@@ -488,9 +521,9 @@ function renderTable(){
   });
   document.getElementById("count-lbl").textContent=sorted.length+" koin";
 
-  const cols=["#","Token","MktCap","Vol 24h","Vol/MC%","1h","24h","7d","MA7 Dist","Zona MA7","MHR","Momentum","Vol/MC Trend","Vol Spike","Sinyal Kuadran","Skor"];
-  const aligns=[1,0,1,1,1,1,1,1,1,0,1,0,1,1,0,1];
-  const widths=[24,155,76,82,48,44,52,52,62,115,44,100,78,76,155,42];
+  const cols=["#","Token","Sektor","MktCap","Vol 24h","Vol/MC%","1h","24h","7d","MA7 Dist","Zona MA7","MHR","Momentum","Vol/MC Trend","Vol Spike","Sinyal Kuadran","Skor"];
+  const aligns=[1,0,0,1,1,1,1,1,1,1,0,1,0,1,1,0,1];
+  const widths=[22,150,68,74,78,44,46,50,50,60,112,40,96,74,72,148,38];
 
   document.getElementById("thead").innerHTML="<tr>"+cols.map((h,i)=>
     `<th class="${aligns[i]?"":"L"}" style="width:${widths[i]}px">${h}</th>`).join("")+"</tr>";
@@ -518,6 +551,7 @@ function renderTable(){
         ${(()=>{const ct=capTier(c.mcap);return ct?`<span class="cap-badge" style="background:${ct.bg};color:${ct.fg}">${ct.l}</span>`:""})()}
         ${isWash(c.vol,c.mcap)?`<span class="cap-badge" style="background:var(--purple-bg);color:var(--purple)">WASH⛔</span>`:""}
       </div></td>
+      <td class="L" style="font-size:10px"><span style="background:var(--bg2);color:var(--tx1);padding:1px 5px;border-radius:3px;white-space:nowrap">${getSector(c.id)}</span>${c.watchlist?'<span style="background:var(--blue-bg);color:var(--blue);font-size:9px;padding:0 3px;border-radius:3px;margin-left:2px">WL</span>':''}</td>
       <td>${fmtMC(c.mcap)}</td>
       <td style="${thin?"color:var(--amber);font-weight:500":""}">${fmtVol(c.vol)}</td>
       <td>${(c.vmr*100).toFixed(1)}%</td>
@@ -615,7 +649,7 @@ async function loadData(){
   }
 
   try{
-    const markets=await apiFetch("/coins/markets?vs_currency=usd&order=volume_desc&per_page=150&page=1&sparkline=true&price_change_percentage=1h%2C24h%2C7d");
+    const markets=await apiFetch("/coins/markets?vs_currency=usd&order=volume_desc&per_page=200&page=1&sparkline=true&price_change_percentage=1h%2C24h%2C7d");
     coins=markets.map((c,i)=>{
       const sp=c.sparkline_in_7d?.price||[];
       const ma7=calcMA7(sp);
@@ -629,13 +663,40 @@ async function loadData(){
       const trend=getVMRTrend(c.id,vmr,prevSnap);
       return{rank:i+1,id:c.id,name:c.name,sym:c.symbol.toUpperCase(),
         mcap:c.market_cap,vol:c.total_volume,vmr,c1h,c24h,c7d,ma7d,mhr,trend,
-        vs:null,score:calcScoreEx(vmr,c24h,c7d,ma7d,c.total_volume,c1h,c.market_cap),
-        stable:STABLE.has(c.symbol.toLowerCase()),img:c.image};
+        vs:null,score:calcScoreEx(vmr,c24h,c7d,ma7d,c.total_volume,c1h,c.market_cap),sector:getSector(c.id),
+        stable:STABLE.has(c.symbol.toLowerCase()),img:c.image,watchlist:false};
     });
 
     // Simpan snapshot setelah load
     saveSnapshot(coins);
 
+    // Fetch watchlist tokens tidak ada di top 200
+    const existIds=new Set(coins.map(c=>c.id));
+    const missingWL=WATCHLIST_IDS.filter(id=>!existIds.has(id));
+    if(missingWL.length>0){
+      try{
+        await sleep(500);
+        const wlData=await apiFetch(
+          "/coins/markets?vs_currency=usd&ids="+missingWL.join(",")
+          +"&sparkline=true&price_change_percentage=1h%2C24h%2C7d"
+        );
+        wlData.forEach((c,i)=>{
+          const sp=c.sparkline_in_7d?.price||[];
+          const ma7=calcMA7(sp);
+          const curP=c.current_price||0;
+          const ma7d=(ma7&&ma7>0)?(curP-ma7)/ma7*100:0;
+          const c1h=(c.price_change_percentage_1h_in_currency||0)/100;
+          const c24h=(c.price_change_percentage_24h_in_currency||0)/100;
+          const c7d=(c.price_change_percentage_7d_in_currency||0)/100;
+          const vmr=c.market_cap>0?c.total_volume/c.market_cap:0;
+          coins.push({rank:200+i+1,id:c.id,name:c.name,sym:c.symbol.toUpperCase(),
+            mcap:c.market_cap,vol:c.total_volume,vmr,c1h,c24h,c7d,ma7d,
+            vs:null,score:calcScoreEx(vmr,c24h,c7d,ma7d,c.total_volume,c1h,c.market_cap),
+            sector:getSector(c.id),stable:STABLE.has(c.symbol.toLowerCase()),
+            img:c.image,watchlist:true});
+        });
+      }catch(e){console.warn("Watchlist fetch failed:",e.message);}
+    }
     document.getElementById("ts").textContent="CoinGecko API · "+new Date().toLocaleString("id-ID");
     renderTable();
     renderBTCPanel(coins);
