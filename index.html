@@ -91,6 +91,17 @@ tr:hover td{background:var(--bg2)}
 .micro-row td{background:rgba(180,30,30,0.05)!important}
 .cap-badge{font-size:9px;padding:0 4px;border-radius:3px;font-weight:500;flex-shrink:0}
 </style>
+<script>
+window.onerror=function(msg,src,line,col,err){
+  const db=document.getElementById("debug-box");
+  if(db){
+    db.style.display="block";
+    db.innerHTML="<strong>JS Error:</strong> "+msg+"<br>Line: "+line+", Col: "+col+"<br>"+
+      (err&&err.stack?err.stack.split("\n").slice(0,3).join("<br>"):"");
+  }
+  return false;
+};
+</script>
 </head>
 <body>
 
@@ -161,6 +172,7 @@ tr:hover td{background:var(--bg2)}
     </div>
 
     <div id="err-box" style="display:none" class="err-box"></div>
+    <div id="debug-box" style="display:none;background:var(--amber-bg);color:var(--amber);border-radius:var(--r);padding:8px 10px;font-size:11px;margin-bottom:8px;font-family:monospace"></div>
 
     <div id="prog-wrap" style="display:none;margin-bottom:8px">
       <div style="display:flex;justify-content:space-between">
