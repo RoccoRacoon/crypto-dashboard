@@ -207,6 +207,8 @@ window.onerror=function(msg,src,line,col,err){
       <span class="badge" style="background:var(--purple-bg);color:var(--purple)">Potensi Manipulasi</span> Spike tinggi + Vol tipis + harga turun
       <span class="badge" style="background:var(--purple-bg);color:var(--purple)">Wash Trading ⛔</span> Vol &gt; 2× Market Cap — hampir pasti manipulasi &nbsp;·&nbsp;
       <span class="badge" style="background:var(--red-bg);color:var(--red)">Spike Tanpa Fondasi</span> MHR &lt; 0.8 + 24h% &gt; 5% (rule ICP/DOT) &nbsp;·&nbsp;
+      <span class="badge" style="background:var(--green-bg);color:var(--green)">High Momentum ↗</span> 7d%&gt;50% + MHR&gt;4 + MA7&lt;15% (rule BEAT) &nbsp;·&nbsp;
+      <span class="badge" style="background:var(--blue-bg);color:var(--blue)">Large Cap Coiling 🐢</span> MA7&lt;1% + mcap&gt;$3B + 7d&gt;3% (rule XLM) &nbsp;·&nbsp;
       <span class="badge" style="background:var(--amber-bg);color:var(--amber)">Mikro ⚠ / Nano ⛔</span> Market cap &lt; $200M — risiko tinggi, likuiditas rendah
     </div>
 
@@ -309,7 +311,15 @@ function calcMHR(c24h,c7d){
 function calcScore(vmr,c24h,c7d,ma7d,vol,c1h){
   const p24=c24h*100, p7=c7d*100;
   const a=p24<0?0:p24<=2?p24/2*18:p24<=15?35:p24<=30?20:8;
-  const b=p7<0?0:p7<=5?p7/5*12:p7<=20?25:p7<=40?15:5;
+  let b;
+    if(p7<0)b=0;
+    else if(p7<=5)b=p7/5*12;
+    else if(p7<=20)b=25;
+    else if(p7<=40)b=15;
+    else if(mhr!==null&&mhr>6)b=20;
+    else if(mhr!==null&&mhr>4)b=15;
+    else b=5;
+    const susBon=(p7>50&&mhr!==null&&mhr>4&&ma7d<15?12:p7>30&&mhr!==null&&mhr>3&&ma7d<15?6:0);
   const c=Math.min(25,vmr/0.08*25);
   const d=vol>=1e9?15:vol>=1e8?10:vol>=1e7?6:vol>=1e6?3:0;
   const bonus=(c1h>0&&c24h>0.005&&c7d>0.02)?5:0;
@@ -342,7 +352,7 @@ function calcScoreEx(vmr,c24h,c7d,ma7d,vol,c1h,mcap){
   const washPenalty=isWash(vol,mcap)?-30:0;
   // Penalti extreme VMR pada small/micro cap
   const extremePenalty=isExtremeVMR(vmr,mcap)?-15:0;
-  return Math.min(100,Math.max(0,a+b+c+d+bonus+ma7adj+mhrPenalty+deadCat+washPenalty+extremePenalty));
+  return Math.min(100,Math.max(0,a+b+c+d+bonus+susBon+ma7adj+mhrPenalty+deadCat+washPenalty+extremePenalty));
 }
 
 function isThin(vol){return vol<MIN_VOL;}
@@ -418,6 +428,10 @@ function sigI(ma7d,vs,sc,vol,c24h,c7d,mhr,mcap){
   if(vs!==null&&vs>2&&thin&&c24h<=0) return{l:"Potensi Manipulasi!",bg:"var(--purple-bg)",fg:"var(--purple)"};
   if(thin&&vs!==null&&vs>1.5)        return{l:"Vol Tipis — Waspadai",bg:"var(--amber-bg)",fg:"var(--amber)"};
   // ── RULE ICP/DOT: spike tanpa fondasi mingguan ──
+    // ── NEW: High Momentum Continuation (BEAT pattern) ──
+  if(p7>50&&mhr!==null&&mhr>4&&ma7d<15&&!thin) return{l:"High Momentum ↗",bg:"var(--green-bg)",fg:"var(--green)"};
+  // ── NEW: Large Cap Coiling (XLM pattern) ──
+  if(ma7d>=0&&ma7d<1&&mcap>3e9&&p7>3) return{l:"Large Cap Coiling 🐢",bg:"var(--blue-bg)",fg:"var(--blue)"};
   if(mhr!==null&&mhr<0.8&&p24>5)    return{l:"Spike Tanpa Fondasi",bg:"var(--red-bg)",fg:"var(--red)"};
   if(mhr!==null&&mhr<0.3&&p24>3)    return{l:"Spike Sekarat",bg:"var(--red-bg)",fg:"var(--red)"};
   if(p7<0&&p24>2)                    return{l:"Dead Cat Bounce",bg:"var(--red-bg)",fg:"var(--red)"};
@@ -492,6 +506,8 @@ function renderStats(){
   const wash=d.filter(c=>isWash(c.vol,c.mcap)).length;
   const micro=d.filter(c=>c.mcap>0&&c.mcap<200e6).length;
   const tanpa=d.filter(c=>c.mhr!==null&&c.mhr<0.8&&c.c24h*100>5).length;
+  const hiMom=d.filter(c=>c.c7d*100>50&&c.mhr!==null&&c.mhr>4&&c.ma7d<15&&!isThin(c.vol)).length;
+  const lgCoil=d.filter(c=>c.ma7d>=0&&c.ma7d<1&&c.mcap>3e9&&c.c7d*100>3).length;
   const items=[
     {l:"Koin",v:d.length,s:"top 150 by volume"},
     {l:"Breakout",v:brk,s:"MA7 fresh + spike valid"},
@@ -501,6 +517,8 @@ function renderStats(){
     {l:"Spike Tanpa Fondasi",v:tanpa,s:"MHR<0.8 + 24h>5%",warn:tanpa>0},
     {l:"Potensi Manip",v:manip,s:"spike tipis + turun",warn:manip>0},
     {l:"Mikro-cap (<$200M)",v:micro,s:"extra due diligence",warn:micro>3},
+    {l:"High Momentum ↗",v:hiMom,s:"7d>50% MHR>4 MA7<15%",warn:hiMom>0},
+    {l:"Large Cap Coiling",v:lgCoil,s:"MA7<1% mcap>$3B",warn:lgCoil>0},
     {l:"Vol Spike",v:loaded+"/"+d.length,s:"dimuat"},
   ];
   document.getElementById("stats").innerHTML=items.map(s=>
