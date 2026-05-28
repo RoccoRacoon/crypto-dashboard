@@ -311,27 +311,23 @@ function calcMHR(c24h,c7d){
 function calcScore(vmr,c24h,c7d,ma7d,vol,c1h){
   const p24=c24h*100, p7=c7d*100;
   const a=p24<0?0:p24<=2?p24/2*18:p24<=15?35:p24<=30?20:8;
+  const mhr=calcMHR(c24h,c7d);
   let b;
-    if(p7<0)b=0;
-    else if(p7<=5)b=p7/5*12;
-    else if(p7<=20)b=25;
-    else if(p7<=40)b=15;
-    else if(mhr!==null&&mhr>6)b=20;
-    else if(mhr!==null&&mhr>4)b=15;
-    else b=5;
-    const susBon=(p7>50&&mhr!==null&&mhr>4&&ma7d<15?12:p7>30&&mhr!==null&&mhr>3&&ma7d<15?6:0);
+  if(p7<0)b=0;
+  else if(p7<=5)b=p7/5*12;
+  else if(p7<=20)b=25;
+  else if(p7<=40)b=15;
+  else if(mhr!==null&&mhr>6)b=20;
+  else if(mhr!==null&&mhr>4)b=15;
+  else b=5;
+  const susBon=(p7>50&&mhr!==null&&mhr>4&&ma7d<15?12:p7>30&&mhr!==null&&mhr>3&&ma7d<15?6:0);
   const c=Math.min(25,vmr/0.08*25);
   const d=vol>=1e9?15:vol>=1e8?10:vol>=1e7?6:vol>=1e6?3:0;
   const bonus=(c1h>0&&c24h>0.005&&c7d>0.02)?5:0;
   const ma7adj=ma7d>18?-15:(ma7d<5&&c24h>0)?5:0;
-  // Penalti MHR: spike sekarat
-  const mhr=calcMHR(c24h,c7d);
   const mhrPenalty=mhr!==null&&mhr<0.3?-10:0;
-  // Penalti dead cat: 7d negatif tapi 24h spike besar
   const deadCat=(p7<0&&p24>2)?-15:0;
-  // Penalti wash trading: Vol > 2× MC = kemungkinan besar manipulasi
-  const washPen = (arguments[1]!==undefined && arguments[3]!==undefined) ? 0 : 0; // placeholder
-  return Math.min(100,Math.max(0,a+b+c+d+bonus+ma7adj+mhrPenalty+deadCat));
+  return Math.min(100,Math.max(0,a+b+c+d+bonus+susBon+ma7adj+mhrPenalty+deadCat));
 }
 
 // calcScore versi extended dengan mcap
@@ -340,17 +336,26 @@ function calcScoreEx(vmr,c24h,c7d,ma7d,vol,c1h,mcap){
   vmr=vmr||0;c24h=c24h||0;c7d=c7d||0;ma7d=ma7d||0;vol=vol||0;c1h=c1h||0;mcap=mcap||0;
   const p24=c24h*100, p7=c7d*100;
   const a=p24<0?0:p24<=2?p24/2*18:p24<=15?35:p24<=30?20:8;
-  const b=p7<0?0:p7<=5?p7/5*12:p7<=20?25:p7<=40?15:5;
+  // mhr harus didefinisikan SEBELUM b (b menggunakan mhr untuk MHR-adjusted scoring)
+  const mhr=calcMHR(c24h,c7d);
+  // b component — MHR-adjusted: akumulasi gradual (MHR>4) dapat credit lebih
+  let b;
+  if(p7<0)b=0;
+  else if(p7<=5)b=p7/5*12;
+  else if(p7<=20)b=25;
+  else if(p7<=40)b=15;
+  else if(mhr!==null&&mhr>6)b=20;
+  else if(mhr!==null&&mhr>4)b=15;
+  else b=5;
+  // Sustained momentum bonus: 7d kuat + MHR tinggi + belum overextended (rule BEAT)
+  const susBon=(p7>50&&mhr!==null&&mhr>4&&ma7d<15?12:p7>30&&mhr!==null&&mhr>3&&ma7d<15?6:0);
   const c=Math.min(25,vmr/0.08*25);
   const d=vol>=1e9?15:vol>=1e8?10:vol>=1e7?6:vol>=1e6?3:0;
   const bonus=(c1h>0&&c24h>0.005&&c7d>0.02)?5:0;
   const ma7adj=ma7d>18?-15:(ma7d<5&&c24h>0)?5:0;
-  const mhr=calcMHR(c24h,c7d);
   const mhrPenalty=mhr!==null&&mhr<0.3?-10:0;
   const deadCat=(p7<0&&p24>2)?-15:0;
-  // Penalti wash trading: Vol > 2× Market Cap
   const washPenalty=isWash(vol,mcap)?-30:0;
-  // Penalti extreme VMR pada small/micro cap
   const extremePenalty=isExtremeVMR(vmr,mcap)?-15:0;
   return Math.min(100,Math.max(0,a+b+c+d+bonus+susBon+ma7adj+mhrPenalty+deadCat+washPenalty+extremePenalty));
 }
