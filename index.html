@@ -202,7 +202,7 @@ window.onerror=function(msg,src,line,col,err){
 
     <div class="lgd">
       <span style="font-weight:500;color:var(--tx1)">Sinyal:</span>
-      <span class="badge" style="background:var(--green-bg);color:var(--green)">BREAKOUT</span> MA7&lt;8% + Spike&gt;2× + Vol&gt;$1M
+      <span class="badge" style="background:var(--green-bg);color:var(--green)">BREAKOUT</span> MA7 0-8% (di atas MA7) + Spike&gt;2× + Vol&gt;$1M
       <span class="badge" style="background:var(--red-bg);color:var(--red)">EXHAUSTION</span> MA7&gt;15% + Spike&gt;2× + Vol&gt;$1M
       <span class="badge" style="background:var(--purple-bg);color:var(--purple)">Potensi Manipulasi</span> Spike tinggi + Vol tipis + harga turun
       <span class="badge" style="background:var(--purple-bg);color:var(--purple)">Wash Trading ⛔</span> Vol &gt; 2× Market Cap — hampir pasti manipulasi &nbsp;·&nbsp;
@@ -443,11 +443,12 @@ function sigI(ma7d,vs,sc,vol,c24h,c7d,mhr,mcap){
   // ── Tambahan: micro/nano cap tanpa vol spike = berisiko tinggi ──
   if(mcap<100e6&&vs===null)          return{l:"Mikro-cap — Tunggu Data",bg:"var(--amber-bg)",fg:"var(--amber)"};
   if(vs!==null&&!thin){
-    if(ma7d<8 &&vs>2)  return{l:"BREAKOUT — Beli",       bg:"var(--green-bg)",fg:"var(--green)"};
+    if(ma7d>=0&&ma7d<8&&vs>2)  return{l:"BREAKOUT — Beli",bg:"var(--green-bg)",fg:"var(--green)"};
     if(ma7d>15&&vs>2)  return{l:"EXHAUSTION — Hindari",  bg:"var(--red-bg)",  fg:"var(--red)"};
-    if(ma7d<8 &&vs<1)  return{l:"Konsolidasi — Tunggu",  bg:"var(--blue-bg)", fg:"var(--blue)"};
+    if(ma7d>=0&&ma7d<8&&vs<1)  return{l:"Konsolidasi — Tunggu",bg:"var(--blue-bg)",fg:"var(--blue)"};
     if(ma7d>15&&vs<1)  return{l:"Overextended — Tunggu", bg:"var(--amber-bg)",fg:"var(--amber)"};
-    if(ma7d<10&&vs>=1.5&&sc>=58)return{l:"Momentum Bagus",bg:"var(--green-bg)",fg:"var(--green-mid)"};
+    if(ma7d>=0&&ma7d<10&&vs>=1.5&&sc>=58)return{l:"Momentum Bagus",bg:"var(--green-bg)",fg:"var(--green-mid)"};
+    if(ma7d<0&&vs>2)return{l:"Bounce? Tunggu MA7",bg:"var(--amber-bg)",fg:"var(--amber)"};
   }
   const sfx=thin?" (vol tipis)":"";
   if(sc>=72)return{l:"Beli Kuat"+sfx,   bg:"var(--green-bg)",fg:"var(--green)"};
